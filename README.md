@@ -1,24 +1,28 @@
 # Lending Risk Intelligence
 
-Programmatic credit risk analysis and portfolio segmentation system. Produces executive summaries, segment drill-downs, and dollar exposure figures for lending portfolios.
+Programmatic credit risk analysis, portfolio segmentation, and interest rate prediction on LendingClub loan data. Produces executive summaries, segment drill-downs, dollar exposure figures, and a tuned interest rate model.
 
 ## Data
 
-Source: Lending Club loan dataset (890k records, 2007–2015)
+Source: LendingClub accepted loans dataset (2007–2018 Q4)
 
-**Important:** Raw data is gitignored. Place the dataset as `data/raw/lending_club.csv` before running the pipeline.
+**Important:** Raw data is gitignored due to size. Place the dataset at:
+```
+lending-risk-data/accepted_2007_to_2018q4.csv/accepted_2007_to_2018Q4.csv
+```
+The dataset is available on [Kaggle](https://www.kaggle.com/datasets/wordsforthewise/lending-club).
 
 ## Pipeline
 
-The analysis runs in three phases:
+Stages run in order. Each script reads from the previous stage's output.
 
 ### Phase 1: Clean (`pipeline/clean.py`)
 
 Ingests raw loan data, engineers binary default outcome, drops >50% null columns, removes noise columns, and outputs cleaned CSV plus data quality report.
 
-**Output:**
-- `data/processed/lending_risk_cleaned.csv` — Dataset for analysis
-- `data/processed/data_quality_report.json` — Decisions and counts
+**Output:** `stages/02-clean/output/`
+- `lending_risk_cleaned.csv` — dataset for all downstream stages
+- `data_quality_report.json` — column decisions and row counts
 
 **Run:**
 ```bash
@@ -27,11 +31,12 @@ python pipeline/clean.py
 
 ### Phase 2: Segment (`pipeline/segment.py`)
 
-Cuts cleaned data by loan grade, term, purpose, home ownership, and employment length. Calculates default rates and business context for each segment.
+Cuts cleaned data by loan grade, term, purpose, home ownership, and employment length. Calculates default rates and flags crisis-era cohorts.
 
-**Output:**
-- `data/processed/segment_summary.csv` — Aggregate by segment
-- `data/processed/{grade,term,purpose, etc.}_breakdown.json` — Drill-down tables
+**Output:** `stages/03-segment/output/`
+- `segment_summary.csv` — aggregate default rates by segment
+- `crisis_crosstab.csv` — 2008–2010 cohort breakdown
+- `{grade,term,purpose,...}_breakdown.json` — drill-down tables
 
 **Run:**
 ```bash
@@ -40,36 +45,42 @@ python pipeline/segment.py
 
 ### Phase 3: Exposure (`pipeline/exposure.py`)
 
-Translates default rates into dollar risk figures at portfolio and segment level. Calculates expected loss and produces numbers for board and CFO use.
+Translates default rates into dollar risk figures at portfolio and segment level. Calculates expected loss for board and CFO use.
 
-**Output:**
-- `data/processed/exposure_summary.csv` — Segment-level exposure
-- `data/processed/portfolio_headline.json` — Top-line at-risk dollars
-- `data/processed/{exposure breakdown JSONs}` — Dashboard data layer
+**Output:** `stages/04-exposure/output/`
+- `exposure_summary.csv` — segment-level expected loss
+- `at_risk_cohorts.csv` — highest-risk cohorts
+- `portfolio_headline.json` — top-line at-risk dollars
+- Segment-level exposure breakdown JSONs (dashboard data layer)
 
 **Run:**
 ```bash
 python pipeline/exposure.py
 ```
 
-### Phase 4: Predict (`pipeline/pd_model.py`)
+### Phase 4: Model (`pipeline/model.py`)
 
-Builds a dual-model system to validate the company's grading accuracy and identify portfolio gaps:
+Trains a HistGradientBoosting regressor to predict loan interest rate from origination features. Uses permutation importance to rank feature contributions.
 
-**Model 1: Grade Replicator** — Multiclass classifier that predicts loan grade (A–G) using only origination-time features (loan amount, DTI, income, employment, purpose, home ownership). Tests whether the company's grading is consistent and rational.
+**Performance:** Test R² = 0.517, MAE = 0.0252 pp
 
-**Model 2: Default Predictor** — Logistic regression that independently predicts default probability without access to grade or interest_rate. When compared to actual grades and company-assigned interest rates, identifies mispriced segments and underwriting gaps.
+**Features:** FICO score, loan amount, DTI, annual income, term, revolving utilization, delinquency history, inquiry count, open accounts, public records, employment length, purpose, home ownership
 
-**Output:**
-- `data/processed/grade_model.pkl` — Serialized grade replicator
-- `data/processed/pd_model.pkl` — Serialized default predictor
-- `data/processed/model_comparison.json` — Grade vs. actual, default predictions, identified gaps
-- `data/processed/loans_scored.csv` — Full loan file with predicted grade and default probability
+**Output:** Prints model performance and feature importance table to stdout.
 
 **Run:**
 ```bash
-python pipeline/pd_model.py
+python pipeline/model.py
 ```
+
+## Notebooks
+
+Exploratory and analytical work underlying the pipeline.
+
+- `notebooks/exploration.ipynb` — initial data profiling and variable survey
+- `notebooks/segmentation.ipynb` — segment analysis and default rate deep-dives
+- `notebooks/exposure.ipynb` — expected loss calculations and cohort analysis
+- `notebooks/interest_rate_model.ipynb` — full modelling walkthrough: OLS baseline, VIF analysis, log transform evaluation, tree model grid search, and HGB tuning to Test R² = 0.507
 
 ## Dashboard
 
@@ -84,10 +95,6 @@ Serve locally:
 python -m http.server 8000
 ```
 Then open `http://localhost:8000/dashboard/index.html`
-
-## Report
-
-`report/findings.pdf` — One-page summary for stakeholders who will not view the dashboard. Findings only, no methodology.
 
 ## Notes
 
