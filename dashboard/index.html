@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lending Risk Intelligence — Executive Summary</title>
+    <link rel="stylesheet" href="styles/main.css">
+    <link rel="stylesheet" href="styles/charts.css">
+</head>
+<body>
+    <div class="container">
+        <nav class="top-nav">
+            <h1>Lending Risk Intelligence</h1>
+            <ul>
+                <li><a href="index.html" class="active">Summary</a></li>
+                <li><a href="segments.html">Segments</a></li>
+                <li><a href="exposure.html">Exposure</a></li>
+            </ul>
+        </nav>
+
+        <!-- HEADLINE FIGURES: Above the fold, above all else -->
+        <section class="headline">
+            <div class="card metric">
+                <h3>Portfolio Value</h3>
+                <p class="value" id="portfolio-value">—</p>
+            </div>
+            <div class="card metric">
+                <h3>Default Rate</h3>
+                <p class="value" id="default-rate">—</p>
+            </div>
+            <div class="card metric">
+                <h3>Expected Loss</h3>
+                <p class="value" id="expected-loss">—</p>
+            </div>
+            <div class="card metric">
+                <h3>Loss Rate</h3>
+                <p class="value" id="loss-rate">—</p>
+            </div>
+        </section>
+
+        <!-- DRILL-DOWN: Portfolio context -->
+        <section class="context">
+            <div class="card">
+                <h3>Portfolio Composition</h3>
+                <table id="portfolio-table">
+                    <thead>
+                        <tr><th>Metric</th><th>Value</th></tr>
+                    </thead>
+                    <tbody>
+                        <!-- Populated by JS -->
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="card">
+                <h3>Default Rate by Grade</h3>
+                <div id="grade-chart"></div>
+            </div>
+        </section>
+
+        <!-- CRISIS NOTE -->
+        <section class="note">
+            <p><strong>Note:</strong> Crisis-era loans (2008–2010) have elevated default rates. These cohorts are flagged separately in the Segments view. Portfolio baseline should not be inferred from crisis period alone.</p>
+        </section>
+
+        <footer>
+            <p>Last updated: <span id="timestamp">—</span></p>
+        </footer>
+    </div>
+
+    <script>
+        // TODO: Load portfolio_headline.json and populate headline metrics
+        // TODO: Load portfolio composition data and render summary table
+        // TODO: Load grade breakdown and render chart
+        // TODO: Set timestamp to file generation time
+    </script>
+</body>
+</html>

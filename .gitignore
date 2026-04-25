@@ -1,0 +1,24 @@
+# Raw data (large, sensitive)
+data/raw/
+lending-risk-data/
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+dist/
+build/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+
+# Pipeline outputs (large, regenerable)
+stages/*/output/
+data/processed/

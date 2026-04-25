@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lending Risk Intelligence — Exposure</title>
+    <link rel="stylesheet" href="styles/main.css">
+    <link rel="stylesheet" href="styles/charts.css">
+</head>
+<body>
+    <div class="container">
+        <nav class="top-nav">
+            <h1>Lending Risk Intelligence</h1>
+            <ul>
+                <li><a href="index.html">Summary</a></li>
+                <li><a href="segments.html">Segments</a></li>
+                <li><a href="exposure.html" class="active">Exposure</a></li>
+            </ul>
+        </nav>
+
+        <!-- HEADLINE: Total At-Risk Dollars -->
+        <section class="exposure-headline">
+            <div class="card metric">
+                <h3>Total Expected Loss</h3>
+                <p class="value" id="total-exposure">—</p>
+                <p class="subtitle">Dollar value at risk</p>
+            </div>
+        </section>
+
+        <!-- BY-SEGMENT EXPOSURE -->
+        <section class="exposure-tables">
+            <div class="card">
+                <h3>Exposure by Loan Grade</h3>
+                <p class="subtitle">Which grades carry the most dollars at risk? (Risk officer prioritizes monitoring; underwriting sizes bets)</p>
+                <table id="grade-exposure">
+                    <thead>
+                        <tr>
+                            <th>Grade</th>
+                            <th>Portfolio Value</th>
+                            <th>Default Rate</th>
+                            <th>Expected Loss</th>
+                            <th>% of Portfolio</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Populated by JS -->
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="card">
+                <h3>Exposure by Loan Term</h3>
+                <p class="subtitle">How much dollar exposure extends into 60-month cohorts?</p>
+                <table id="term-exposure">
+                    <thead>
+                        <tr>
+                            <th>Term</th>
+                            <th>Portfolio Value</th>
+                            <th>Default Rate</th>
+                            <th>Expected Loss</th>
+                            <th>% of Portfolio</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Populated by JS -->
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="card">
+                <h3>Exposure by Loan Purpose</h3>
+                <p class="subtitle">Which use cases represent the largest at-risk dollars?</p>
+                <table id="purpose-exposure">
+                    <thead>
+                        <tr>
+                            <th>Purpose</th>
+                            <th>Portfolio Value</th>
+                            <th>Default Rate</th>
+                            <th>Expected Loss</th>
+                            <th>% of Portfolio</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Populated by JS -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- HIGH-RISK COMBINATIONS -->
+        <section class="heatmap">
+            <div class="card">
+                <h3>Risk Concentration: Grade × Term</h3>
+                <p class="subtitle">Where are the riskiest combinations? (Grade F 60-month loans, for example)</p>
+                <table id="grade-term-heatmap">
+                    <thead>
+                        <tr>
+                            <th>Grade</th>
+                            <th>36-Month Default Rate</th>
+                            <th>60-Month Default Rate</th>
+                            <th>Spread</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Populated by JS -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- RESERVE AND STRESS SCENARIOS -->
+        <section class="scenarios">
+            <div class="card">
+                <h3>Reserve Scenarios</h3>
+                <p class="subtitle">CFO-level figures for financial planning and stress testing</p>
+                <table id="scenarios-table">
+                    <thead>
+                        <tr>
+                            <th>Scenario</th>
+                            <th>Expected Loss</th>
+                            <th>Notes</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Base Case</td>
+                            <td id="scenario-base">—</td>
+                            <td>Current portfolio, historical default rates</td>
+                        </tr>
+                        <tr>
+                            <td>+25% Default Rate</td>
+                            <td id="scenario-25">—</td>
+                            <td>Mild economic stress</td>
+                        </tr>
+                        <tr>
+                            <td>+50% Default Rate</td>
+                            <td id="scenario-50">—</td>
+                            <td>Moderate recession</td>
+                        </tr>
+                        <tr>
+                            <td>Crisis Rate (2008–2010)</td>
+                            <td id="scenario-crisis">—</td>
+                            <td>Downside bound (historical)</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <footer>
+            <p>All figures in base currency. Expected loss assumes 70% recovery on defaulted loans.</p>
+        </footer>
+    </div>
+
+    <script>
+        // TODO: Load exposure_summary.json and populate grade/term/purpose tables
+        // TODO: Calculate and populate grade × term heatmap
+        // TODO: Load sensitivity scenarios and populate reserve table
+        // TODO: Sort all tables by expected loss (descending) for impact prioritization
+    </script>
+</body>
+</html>

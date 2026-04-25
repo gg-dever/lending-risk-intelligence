@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lending Risk Intelligence — Segments</title>
+    <link rel="stylesheet" href="styles/main.css">
+    <link rel="stylesheet" href="styles/charts.css">
+</head>
+<body>
+    <div class="container">
+        <nav class="top-nav">
+            <h1>Lending Risk Intelligence</h1>
+            <ul>
+                <li><a href="index.html">Summary</a></li>
+                <li><a href="segments.html" class="active">Segments</a></li>
+                <li><a href="exposure.html">Exposure</a></li>
+            </ul>
+        </nav>
+
+        <!-- SEGMENTATION TABS -->
+        <section class="drill-down">
+            <div class="tabs">
+                <button class="tab-button active" data-segment="grade">By Grade</button>
+                <button class="tab-button" data-segment="term">By Term</button>
+                <button class="tab-button" data-segment="purpose">By Purpose</button>
+                <button class="tab-button" data-segment="home_ownership">By Home Ownership</button>
+                <button class="tab-button" data-segment="emp_length">By Employment Length</button>
+            </div>
+
+            <!-- TAB: Grade -->
+            <div class="tab-content active" id="grade-tab">
+                <div class="card">
+                    <h3>Default Rate by Grade</h3>
+                    <p class="subtitle">How default risk increases with lending grade (determines pricing and volume allocation)</p>
+                    <table id="grade-table">
+                        <thead>
+                            <tr>
+                                <th>Grade</th>
+                                <th>Count</th>
+                                <th>Default Rate</th>
+                                <th>Avg Amount</th>
+                                <th>Avg Rate</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Populated by JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- TAB: Term -->
+            <div class="tab-content" id="term-tab">
+                <div class="card">
+                    <h3>Default Rate by Loan Term</h3>
+                    <p class="subtitle">Do longer terms increase default risk? (Affects origination strategy and portfolio duration)</p>
+                    <table id="term-table">
+                        <thead>
+                            <tr>
+                                <th>Term</th>
+                                <th>Count</th>
+                                <th>Default Rate</th>
+                                <th>Avg Amount</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Populated by JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- TAB: Purpose -->
+            <div class="tab-content" id="purpose-tab">
+                <div class="card">
+                    <h3>Default Rate by Loan Purpose</h3>
+                    <p class="subtitle">Which use cases rank highest by risk? (Shapes marketing spend and underwriting criteria)</p>
+                    <table id="purpose-table">
+                        <thead>
+                            <tr>
+                                <th>Purpose</th>
+                                <th>Count</th>
+                                <th>Default Rate</th>
+                                <th>Avg Amount</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Populated by JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- TAB: Home Ownership -->
+            <div class="tab-content" id="home_ownership-tab">
+                <div class="card">
+                    <h3>Default Rate by Home Ownership</h3>
+                    <p class="subtitle">Does collateral proxy (home ownership) reduce default? (Real estate backing effect)</p>
+                    <table id="home_ownership-table">
+                        <thead>
+                            <tr>
+                                <th>Home Status</th>
+                                <th>Count</th>
+                                <th>Default Rate</th>
+                                <th>Avg Amount</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Populated by JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- TAB: Employment Length -->
+            <div class="tab-content" id="emp_length-tab">
+                <div class="card">
+                    <h3>Default Rate by Employment Length</h3>
+                    <p class="subtitle">Do newer employees default more than established workers? (Income stability proxy)</p>
+                    <table id="emp_length-table">
+                        <thead>
+                            <tr>
+                                <th>Employment Length</th>
+                                <th>Count</th>
+                                <th>Default Rate</th>
+                                <th>Avg Amount</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Populated by JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- CRISIS COHORT COMPARISON -->
+        <section class="crisis-context">
+            <div class="card">
+                <h3>Crisis Period (2008–2010) vs. Normal</h3>
+                <p class="subtitle">Default rates by period. Crisis-era distortions should not inform baseline risk models.</p>
+                <table id="crisis-table">
+                    <thead>
+                        <tr>
+                            <th>Period</th>
+                            <th>Loans</th>
+                            <th>Default Rate</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Populated by JS -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <footer>
+            <p>Drill-down explorer. Click tabs to filter by segment.</p>
+        </footer>
+    </div>
+
+    <script>
+        // TODO: Load segment JSONs and populate tab tables
+        // TODO: Wire tab buttons to show/hide content
+        // TODO: Sort tables by default rate (descending) for risk prioritization
+    </script>
+</body>
+</html>
