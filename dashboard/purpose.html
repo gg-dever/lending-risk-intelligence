@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Risk by Purpose – LendingClub 2007–2018</title>
+  <link rel="stylesheet" href="css/main.css">
+</head>
+<body>
+
+<nav class="navbar">
+  <div class="navbar-container">
+    <div class="navbar-title-wrap">
+      <a href="index.html" class="navbar-brand">
+        <span class="brand-name">LendingClub</span>
+        <small>2007 to 2018</small>
+      </a>
+      <span class="navbar-byline">A dashboard by Gage Gaubert</span>
+    </div>
+    <ul class="navbar-menu">
+      <li><a href="index.html" data-page="home">Home</a></li>
+      <li><a href="grade.html" data-page="grade">Risk by Grade</a></li>
+      <li><a href="term.html" data-page="term">Risk by Term</a></li>
+      <li><a href="purpose.html" data-page="purpose" class="active">Risk by Purpose</a></li>
+      <li><a href="borrower.html" data-page="borrower">Borrower Profile</a></li>
+      <li><a href="cohorts.html" data-page="cohorts">At Risk Cohorts</a></li>
+      <li><a href="model.html" data-page="model">Rate Predictor</a></li>
+      <li><a href="assumptions.html" data-page="assumptions">Methodology</a></li>
+    </ul>
+    <span class="navbar-timestamp">Updated: --:--</span>
+  </div>
+</nav>
+
+<main>
+  <section>
+    <h1>Risk Analysis by Loan Purpose</h1>
+    <p>Loan purpose indicates borrower intent and predicts default probability beyond credit score. Different purposes carry meaningfully different risk profiles.</p>
+  </section>
+
+  <section>
+    <h2>Purpose Distribution</h2>
+    <div class="grid-2">
+      <div class="card">
+        <h3>Loans by Purpose</h3>
+        <div class="chart-container">
+          <canvas id="purpose-count-bar"></canvas>
+        </div>
+      </div>
+      <div class="card">
+        <h3>Default Rate by Purpose</h3>
+        <div class="chart-container">
+          <canvas id="purpose-default-bar"></canvas>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Purpose Metrics</h2>
+    <div class="card">
+      <table>
+        <thead>
+          <tr>
+            <th>Purpose</th>
+            <th>Loan Count</th>
+            <th>Default Rate</th>
+            <th>Avg Loan Amount</th>
+            <th>Portfolio Value</th>
+          </tr>
+        </thead>
+        <tbody id="purpose-table"></tbody>
+      </table>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <p>Loan purpose correlates with default probability. Consider purpose as a secondary risk dimension below grade and term.</p>
+</footer>
+
+<script src="js/main.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+<script>
+
+async function loadPurposeData() {
+  const purposes = await loadJSON('../stages/03-segment/output/purpose_breakdown.json');
+  if (!purposes) return;
+
+  function formatPurpose(raw) {
+    return raw.split('_').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+  }
+
+  // Sort by loan count descending
+  purposes.sort((a, b) => b.loan_count - a.loan_count);
+
+  const labels = purposes.map(p => formatPurpose(p.segment_value));
+  const colors = purposes.map((p, i) => {
+    const rate = p.default_rate;
+    if (rate <= 0.15) return '#3498db';
+    if (rate <= 0.20) return '#f39c12';
+    if (rate <= 0.25) return '#e67e22';
+    return '#e74c3c';
+  });
+
+  // Count bar chart
+  const pieCtx = document.getElementById('purpose-count-bar').getContext('2d');
+  new Chart(pieCtx, {
+    type: 'bar',
+    data: {
+      labels: labels,
+      datasets: [{
+        label: 'Loan Count',
+        data: purposes.map(p => p.loan_count),
+        backgroundColor: colors,
+        borderColor: 'transparent'
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      scales: {
+        y: { beginAtZero: true, ticks: { callback: v => formatNumber(v) } }
+      },
+      plugins: {
+        legend: { display: false }
+      }
+    }
+  });
+
+  // Bar chart
+  const barCtx = document.getElementById('purpose-default-bar').getContext('2d');
+  new Chart(barCtx, {
+    type: 'bar',
+    data: {
+      labels: labels,
+      datasets: [{
+        label: 'Default Rate',
+        data: purposes.map(p => p.default_rate * 100),
+        backgroundColor: colors,
+        borderColor: 'transparent'
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      scales: {
+        y: {
+          beginAtZero: true,
+          max: 35,
+          ticks: { callback: function(v) { return v + '%'; } }
+        }
+      },
+      plugins: {
+        legend: { display: false }
+      }
+    }
+  });
+
+  // Table
+  const table = document.getElementById('purpose-table');
+  purposes.forEach(p => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td><strong>${formatPurpose(p.segment_value)}</strong></td>
+      <td>${formatNumber(p.loan_count)}</td>
+      <td>${formatPercent(p.default_rate, 1)}</td>
+      <td>${formatCurrency(p.avg_loan_amount)}</td>
+      <td>${formatCurrency(p.total_portfolio_value)}</td>
+    `;
+    table.appendChild(tr);
+  });
+
+  initPage('purpose');
+}
+
+document.addEventListener('DOMContentLoaded', loadPurposeData);
+
+</script>
+
+</body>
+</html>

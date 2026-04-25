@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Risk by Grade – LendingClub 2007–2018</title>
+  <link rel="stylesheet" href="css/main.css">
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav class="navbar">
+  <div class="navbar-container">
+    <div class="navbar-title-wrap">
+      <a href="index.html" class="navbar-brand">
+        <span class="brand-name">LendingClub</span>
+        <small>2007 to 2018</small>
+      </a>
+      <span class="navbar-byline">A dashboard by Gage Gaubert</span>
+    </div>
+    <ul class="navbar-menu">
+      <li><a href="index.html" data-page="home">Home</a></li>
+      <li><a href="grade.html" data-page="grade" class="active">Risk by Grade</a></li>
+      <li><a href="term.html" data-page="term">Risk by Term</a></li>
+      <li><a href="purpose.html" data-page="purpose">Risk by Purpose</a></li>
+      <li><a href="borrower.html" data-page="borrower">Borrower Profile</a></li>
+      <li><a href="cohorts.html" data-page="cohorts">At Risk Cohorts</a></li>
+      <li><a href="model.html" data-page="model">Rate Predictor</a></li>
+      <li><a href="assumptions.html" data-page="assumptions">Methodology</a></li>
+    </ul>
+    <span class="navbar-timestamp">Updated: --:--</span>
+  </div>
+</nav>
+
+<!-- MAIN CONTENT -->
+<main>
+
+  <!-- PAGE TITLE -->
+  <section>
+    <h1>Risk Analysis by Loan Grade</h1>
+    <p>Loan grade is the primary risk dimension. Default rates escalate monotonically from 5.8% in grade A to 49.3% in grade G. Grades A and B account for 44% of portfolio count but only 18% of expected losses. Grades C and D together drive 55% of losses despite representing 43% of portfolio value, the core concentration risk of this book.</p>
+  </section>
+
+  <!-- GRADE CARD GRID -->
+  <section>
+    <h2>Grade Breakdown</h2>
+    <div id="grade-cards-grid" class="grade-cards-row"></div>
+  </section>
+
+  <!-- DEFAULT RATE COMPARISON -->
+  <section>
+    <h2>Default Rate Progression</h2>
+    <div class="card">
+      <p>Default rates by grade show no overlap or ambiguity. Each successive grade carries meaningfully higher default risk, validating the credit rating system.</p>
+      <div class="chart-container tall">
+        <canvas id="default-rate-bar"></canvas>
+      </div>
+    </div>
+  </section>
+
+  <!-- PORTFOLIO CONCENTRATION -->
+  <section>
+    <h2>Portfolio Concentration</h2>
+    <div class="grid-2">
+      <div class="card">
+        <h3>Loan Count by Grade</h3>
+        <div class="chart-container">
+          <canvas id="count-bar"></canvas>
+        </div>
+      </div>
+      <div class="card">
+        <h3>Portfolio Value by Grade</h3>
+        <div class="chart-container">
+          <canvas id="value-bar"></canvas>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- EXPECTED LOSS BY GRADE -->
+  <section>
+    <h2>Expected Loss Allocation</h2>
+    <div class="card">
+      <p>Expected loss is allocated according to grade risk and portfolio weight. Grades C and D drive the majority of losses despite representing under half of portfolio value.</p>
+      <div class="chart-container tall">
+        <canvas id="loss-bar"></canvas>
+      </div>
+    </div>
+  </section>
+
+  <!-- DETAILED TABLE -->
+  <section>
+    <h2>Detailed Metrics</h2>
+    <div class="card">
+      <table>
+        <thead>
+          <tr>
+            <th>Grade</th>
+            <th>Loan Count</th>
+            <th>Default Count</th>
+            <th>Default Rate</th>
+            <th>Avg Loan Amount</th>
+            <th>Portfolio Value</th>
+            <th>Avg Interest Rate</th>
+          </tr>
+        </thead>
+        <tbody id="grade-table"></tbody>
+      </table>
+    </div>
+  </section>
+
+</main>
+
+<!-- FOOTER -->
+<footer>
+  <p>Grade-based risk is the strongest predictor of default. Portfolio risk is concentrated in mid-range grades (C, D), not extreme tails.</p>
+</footer>
+
+<!-- SCRIPTS -->
+<script src="js/main.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+<script>
+
+async function loadGradeData() {
+
+  const grades = await loadJSON('../stages/03-segment/output/grade_breakdown.json');
+  if (!grades) return;
+
+  const exposure = await loadCSV('../stages/04-exposure/output/exposure_summary.csv');
+  const gradeLabels = ['A', 'B', 'C', 'D', 'E', 'F', 'G'];
+  const gradeColors = ['#f1c40f', '#f39c12', '#e67e22', '#e74c3c', '#e63946', '#d02d26', '#8e44ad'];
+
+  // Grade cards
+  const cardsGrid = document.getElementById('grade-cards-grid');
+  grades.forEach((g, idx) => {
+    const card = document.createElement('div');
+    card.className = 'grade-card-compact';
+    card.innerHTML = `
+      <div class="gc-circle" style="background-color: ${gradeColors[idx]};">${gradeLabels[idx]}</div>
+      <div class="gc-rate" style="color: ${gradeColors[idx]};">${formatPercent(g.default_rate, 1)}</div>
+      <div class="gc-stats">
+        ${formatNumber(g.loan_count)} loans<br>
+        Avg ${formatPercent(g.avg_int_rate, 1)} rate
+      </div>
+    `;
+    cardsGrid.appendChild(card);
+  });
+
+  // Default rate bar chart
+  const rateCtx = document.getElementById('default-rate-bar').getContext('2d');
+  new Chart(rateCtx, {
+    type: 'bar',
+    data: {
+      labels: gradeLabels,
+      datasets: [{
+        label: 'Default Rate',
+        data: grades.map(g => g.default_rate * 100),
+        backgroundColor: gradeColors,
+        borderColor: 'transparent',
+        barPercentage: 0.55,
+        categoryPercentage: 0.7
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      indexAxis: 'x',
+      scales: {
+        y: {
+          beginAtZero: true,
+          max: 55,
+          ticks: { callback: function(v) { return v + '%'; } }
+        }
+      },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: function(ctx) { return ctx.parsed.y.toFixed(1) + '%'; }
+          }
+        }
+      }
+    }
+  });
+
+  // Count bar (replaced pie)
+  const countCtx = document.getElementById('count-bar').getContext('2d');
+  new Chart(countCtx, {
+    type: 'bar',
+    data: {
+      labels: gradeLabels,
+      datasets: [{
+        label: 'Loan Count',
+        data: grades.map(g => g.loan_count),
+        backgroundColor: gradeColors,
+        borderColor: 'transparent',
+        barPercentage: 0.55,
+        categoryPercentage: 0.7
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      scales: {
+        y: { beginAtZero: true, ticks: { callback: v => (v/1000).toFixed(0) + 'K' } }
+      },
+      plugins: { legend: { display: false } }
+    }
+  });
+
+  // Value bar (replaced pie)
+  const valueCtx = document.getElementById('value-bar').getContext('2d');
+  new Chart(valueCtx, {
+    type: 'bar',
+    data: {
+      labels: gradeLabels,
+      datasets: [{
+        label: 'Portfolio Value',
+        data: grades.map(g => g.total_portfolio_value / 1e9),
+        backgroundColor: gradeColors,
+        borderColor: 'transparent',
+        barPercentage: 0.55,
+        categoryPercentage: 0.7
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      scales: {
+        y: { beginAtZero: true, ticks: { callback: v => '$' + v.toFixed(1) + 'B' } }
+      },
+      plugins: { legend: { display: false } }
+    }
+  });
+
+  // Expected loss bar
+  const exposureByGrade = exposure.filter(r => r.segment_type === 'grade').sort((a, b) => gradeLabels.indexOf(a.segment_value) - gradeLabels.indexOf(b.segment_value));
+  const lossCtx = document.getElementById('loss-bar').getContext('2d');
+  new Chart(lossCtx, {
+    type: 'bar',
+    data: {
+      labels: gradeLabels,
+      datasets: [{
+        label: 'Expected Loss',
+        data: exposureByGrade.map(r => r.segment_expected_loss / 1e9),
+        backgroundColor: gradeColors,
+        borderColor: 'transparent',
+        barPercentage: 0.55,
+        categoryPercentage: 0.7
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      scales: {
+        y: {
+          beginAtZero: true,
+          ticks: { callback: function(v) { return '$' + v.toFixed(2) + 'B'; } }
+        }
+      },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: function(ctx) { return formatCurrency(ctx.parsed.y * 1e9); }
+          }
+        }
+      }
+    }
+  });
+
+  // Detailed table
+  const table = document.getElementById('grade-table');
+  grades.forEach((g, idx) => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td><strong>${gradeLabels[idx]}</strong></td>
+      <td>${formatNumber(g.loan_count)}</td>
+      <td>${formatNumber(g.default_count)}</td>
+      <td style="color: ${gradeColors[idx]}; font-weight: 600;">${formatPercent(g.default_rate, 1)}</td>
+      <td>${formatCurrency(g.avg_loan_amount)}</td>
+      <td>${formatCurrency(g.total_portfolio_value)}</td>
+      <td>${formatPercent(g.avg_int_rate, 1)}</td>
+    `;
+    table.appendChild(tr);
+  });
+
+  initPage('grade');
+}
+
+document.addEventListener('DOMContentLoaded', loadGradeData);
+
+</script>
+
+</body>
+</html>

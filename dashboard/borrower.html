@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Borrower Profile – LendingClub 2007–2018</title>
+  <link rel="stylesheet" href="css/main.css">
+</head>
+<body>
+
+<nav class="navbar">
+  <div class="navbar-container">
+    <div class="navbar-title-wrap">
+      <a href="index.html" class="navbar-brand">
+        <span class="brand-name">LendingClub</span>
+        <small>2007 to 2018</small>
+      </a>
+      <span class="navbar-byline">A dashboard by Gage Gaubert</span>
+    </div>
+    <ul class="navbar-menu">
+      <li><a href="index.html" data-page="home">Home</a></li>
+      <li><a href="grade.html" data-page="grade">Risk by Grade</a></li>
+      <li><a href="term.html" data-page="term">Risk by Term</a></li>
+      <li><a href="purpose.html" data-page="purpose">Risk by Purpose</a></li>
+      <li><a href="borrower.html" data-page="borrower" class="active">Borrower Profile</a></li>
+      <li><a href="cohorts.html" data-page="cohorts">At Risk Cohorts</a></li>
+      <li><a href="model.html" data-page="model">Rate Predictor</a></li>
+      <li><a href="assumptions.html" data-page="assumptions">Methodology</a></li>
+    </ul>
+    <span class="navbar-timestamp">Updated: --:--</span>
+  </div>
+</nav>
+
+<main>
+
+  <section>
+    <h1>Borrower Profile Risk Analysis</h1>
+    <p>Beyond grade and term, borrower characteristics including debt to income ratio and home ownership provide secondary risk signals. Higher DTI constrains repayment capacity; renters show elevated default rates relative to homeowners.</p>
+  </section>
+
+  <section>
+    <h2>Debt to Income (DTI) Analysis</h2>
+    <div class="card">
+      <p>DTI ratio measures monthly debt burden relative to income. Higher DTI constrains repayment capacity.</p>
+      <div class="chart-container">
+        <canvas id="dti-chart"></canvas>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Home Ownership</h2>
+    <div class="card">
+      <p>Home ownership indicates asset accumulation and suggests skin in the game for borrowers.</p>
+      <div class="chart-container">
+        <canvas id="home-ownership-chart"></canvas>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <p>Borrower profile dimensions are secondary risk signals. Grade and term remain the primary drivers.</p>
+</footer>
+
+<script src="js/main.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+<script>
+
+async function loadBorrowerData() {
+
+  // Load breakdowns
+  const dtiData = await loadJSON('../stages/03-segment/output/dti_bucket_breakdown.json');
+  const homeData = await loadJSON('../stages/03-segment/output/home_ownership_breakdown.json');
+
+  if (!dtiData || !homeData) return;
+
+  // DTI Chart
+  dtiData.sort((a, b) => {
+    const orderA = a.segment_value.split('-')[0];
+    const orderB = b.segment_value.split('-')[0];
+    return parseFloat(orderA) - parseFloat(orderB);
+  });
+
+  const dtiCtx = document.getElementById('dti-chart').getContext('2d');
+  new Chart(dtiCtx, {
+    type: 'bar',
+    data: {
+      labels: dtiData.map(d => d.segment_value),
+      datasets: [{
+        label: 'Default Rate',
+        data: dtiData.map(d => d.default_rate * 100),
+        backgroundColor: dtiData.map(d => {
+          const rate = d.default_rate;
+          return rate <= 0.15 ? '#f1c40f' : rate <= 0.20 ? '#f39c12' : rate <= 0.25 ? '#e67e22' : '#e74c3c';
+        }),
+        borderColor: 'transparent',
+        barPercentage: 0.55,
+        categoryPercentage: 0.7
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      scales: { y: { beginAtZero: true, max: 35, ticks: { callback: v => v + '%' } } },
+      plugins: { legend: { display: false } }
+    }
+  });
+
+  // Home Ownership Chart
+  const homeCtx = document.getElementById('home-ownership-chart').getContext('2d');
+  new Chart(homeCtx, {
+    type: 'bar',
+    data: {
+      labels: homeData.map(h => h.segment_value),
+      datasets: [{
+        label: 'Default Rate',
+        data: homeData.map(h => h.default_rate * 100),
+        backgroundColor: homeData.map(h => {
+          const rate = h.default_rate;
+          return rate <= 0.15 ? '#f1c40f' : rate <= 0.20 ? '#f39c12' : rate <= 0.25 ? '#e67e22' : '#e74c3c';
+        }),
+        borderColor: 'transparent',
+        barPercentage: 0.55,
+        categoryPercentage: 0.7
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      scales: { y: { beginAtZero: true, max: 35, ticks: { callback: v => v + '%' } } },
+      plugins: { legend: { display: false } }
+    }
+  });
+
+  initPage('borrower');
+}
+
+document.addEventListener('DOMContentLoaded', loadBorrowerData);
+
+</script>
+
+</body>
+</html>

@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Assumptions &amp; Methodology – LendingClub 2007–2018</title>
+  <link rel="stylesheet" href="css/main.css">
+</head>
+<body>
+
+<nav class="navbar">
+  <div class="navbar-container">
+    <div class="navbar-title-wrap">
+      <a href="index.html" class="navbar-brand">
+        <span class="brand-name">LendingClub</span>
+        <small>2007 to 2018</small>
+      </a>
+      <span class="navbar-byline">A dashboard by Gage Gaubert</span>
+    </div>
+    <ul class="navbar-menu">
+      <li><a href="index.html" data-page="home">Home</a></li>
+      <li><a href="grade.html" data-page="grade">Risk by Grade</a></li>
+      <li><a href="term.html" data-page="term">Risk by Term</a></li>
+      <li><a href="purpose.html" data-page="purpose">Risk by Purpose</a></li>
+      <li><a href="borrower.html" data-page="borrower">Borrower Profile</a></li>
+      <li><a href="cohorts.html" data-page="cohorts">At Risk Cohorts</a></li>
+      <li><a href="model.html" data-page="model">Rate Predictor</a></li>
+      <li><a href="assumptions.html" data-page="assumptions" class="active">Methodology</a></li>
+    </ul>
+    <span class="navbar-timestamp">Updated: --:--</span>
+  </div>
+</nav>
+
+<main>
+
+  <section>
+    <h1>Assumptions and Methodology</h1>
+    <p>Transparency regarding data sources, definitions, assumptions, and analytical approach.</p>
+  </section>
+
+  <!-- LOSS ASSUMPTIONS -->
+  <section>
+    <h2>Loss Assumptions</h2>
+    <div class="card">
+      <table>
+        <tr>
+          <th style="text-align: left;">Parameter</th>
+          <th style="text-align: left;">Value</th>
+          <th style="text-align: left;">Rationale</th>
+        </tr>
+        <tr>
+          <td><strong>Recovery Rate</strong></td>
+          <td>70%</td>
+          <td>Expected recovery on defaulted unsecured consumer credit. Historically calibrated to 2000 to 2020 performance across peer lenders.</td>
+        </tr>
+        <tr>
+          <td><strong>Loss Given Default</strong></td>
+          <td>30%</td>
+          <td>Complement of recovery rate. Represents cash loss after collections efforts.</td>
+        </tr>
+        <tr>
+          <td><strong>Default Definition</strong></td>
+          <td>60+ days past due</td>
+          <td>Industry standard for unsecured consumer credit. Loans 60+ days delinquent treated as defaulted.</td>
+        </tr>
+        <tr>
+          <td><strong>Exposure Basis</strong></td>
+          <td>Current portfolio value</td>
+          <td>Expected loss calculated on current outstanding balances. Does not account for principal paydown or prepayments.</td>
+        </tr>
+      </table>
+    </div>
+  </section>
+
+  <!-- DATA DEFINITIONS -->
+  <section>
+    <h2>Data Definitions</h2>
+    <div class="card">
+      <h3>Loan Status Categories</h3>
+      <ul style="margin: var(--gap-md) 0; padding-left: 1.5rem; line-height: 1.8;">
+        <li><strong>Current:</strong> No payments missed or less than 30 days past due</li>
+        <li><strong>Late (30 to 120 days):</strong> Between 30 and 120 days delinquent</li>
+        <li><strong>Default:</strong> 60 or more days past due (outcome measure)</li>
+        <li><strong>Fully Paid:</strong> Loan fully repaid (excluded from analysis)</li>
+        <li><strong>Charged Off:</strong> Loan written off by lender (treated as default)</li>
+      </ul>
+
+      <h3>Portfolio Definition</h3>
+      <ul style="margin: var(--gap-md) 0; padding-left: 1.5rem; line-height: 1.8;">
+        <li>Data source: LendingClub Accepted Loans 2007 to 2018 Q4</li>
+        <li>Population: 1,274,549 loans</li>
+        <li>Geographic: United States</li>
+        <li>Loan types: Personal, debt consolidation, home improvement, etc.</li>
+        <li>Excluded: Fully paid and charged off loans (outcome already observed)</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ANALYTICAL APPROACH -->
+  <section>
+    <h2>Analytical Approach</h2>
+    <div class="grid-2">
+      <div class="card">
+        <h3>Risk Segmentation</h3>
+        <p>Portfolio segmented by loan grade (A-G), term (36 vs 60 months), purpose, DTI, employment length, and home ownership. Default rates calculated by segment. Expected loss allocated proportionally to segment risk and size.</p>
+      </div>
+      <div class="card">
+        <h3>Predictive Modeling</h3>
+        <p>HistGradientBoosting regressor trained to predict interest rates from origination features. Model performance indicates degree to which rates reflect credit risk. Model residuals inform underpricing analysis.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- DATA QUALITY -->
+  <section>
+    <h2>Data Quality</h2>
+    <div class="card">
+      <h3>Missing Data Handling</h3>
+      <ul style="margin: var(--gap-md) 0; padding-left: 1.5rem; line-height: 1.8;">
+        <li>Columns with more than 50 percent null values: excluded</li>
+        <li>Columns with less than 5 percent null values: forward filled or interpolated</li>
+        <li>Categorical nulls (employment length, home ownership): mapped to sentinel value</li>
+        <li>Numeric nulls: median imputation by grade</li>
+      </ul>
+
+      <h3>Outlier Treatment</h3>
+      <ul style="margin: var(--gap-md) 0; padding-left: 1.5rem; line-height: 1.8;">
+        <li>Annual income above 500k dollars: capped at 500k</li>
+        <li>Loan amounts above 100k dollars: kept as is (reflects actual portfolio)</li>
+        <li>DTI above 100 percent: flagged but retained</li>
+        <li>Interest rates outside 1-35 percent range: excluded (data quality issues)</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- CRISIS ERA ADJUSTMENT -->
+  <section>
+    <h2>Crisis Era Adjustment</h2>
+    <div class="card">
+      <p>Loans originated during 2008-2010 reflect stress period performance during the Great Recession. In this dashboard, these cohorts are flagged separately and excluded from the primary forward-looking baseline. This is a modeling choice used to separate stress-period behavior from normal-period estimates, and not a claim that crisis outcomes are uninformative.</p>
+
+      <table style="margin-top: var(--gap-md);">
+        <tr>
+          <th style="text-align: left;">Period</th>
+          <th style="text-align: left;">Default Rate</th>
+          <th style="text-align: left;">Interpretation</th>
+        </tr>
+        <tr>
+          <td><strong>2007 (Pre Crisis)</strong></td>
+          <td>12 to 14%</td>
+          <td>Normal period baseline</td>
+        </tr>
+        <tr>
+          <td><strong>2008 to 2010 (Crisis)</strong></td>
+          <td>24 to 30%</td>
+          <td>Elevated due to recession. Use with caution.</td>
+        </tr>
+        <tr>
+          <td><strong>2011 onward (Post Crisis)</strong></td>
+          <td>16 to 18%</td>
+          <td>Recovery period. Approaching normal rates.</td>
+        </tr>
+      </table>
+    </div>
+  </section>
+
+  <!-- PREDICTION MODEL SPECS -->
+  <section>
+    <h2>Rate Predictor Technical Specifications</h2>
+    <div class="grid-2">
+      <div class="card">
+        <h3>Key Findings</h3>
+        <ul style="margin: var(--gap-md) 0; padding-left: 1.5rem; line-height: 1.8;">
+          <li>Term length accounts for 27.7% of rate variation</li>
+          <li>FICO score contributes 24.2%</li>
+          <li>Loan amount drives 9.9% of variation</li>
+          <li>Purpose and home ownership add 6 to 7 percent each</li>
+          <li>Delinquency history and inquiry count are minor factors</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>Model Limitations</h3>
+        <ul style="margin: var(--gap-md) 0; padding-left: 1.5rem; line-height: 1.8;">
+          <li>Cannot explain extreme rates (below 6% or above 25%)</li>
+          <li>Uses only origination features available at assessment</li>
+          <li>Assumes rate reflects credit risk pricing</li>
+          <li>Does not include lender subgrade scoring</li>
+          <li>Historical training data (2007 to 2018) only</li>
+        </ul>
+      </div>
+    </div>
+    <div class="card" style="margin-top: var(--gap-md);">
+      <h3>Performance Metrics</h3>
+      <table style="margin-top: var(--gap-md);">
+        <thead>
+          <tr>
+            <th>Metric</th>
+            <th>Train Set</th>
+            <th>Test Set</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>R² (Variance Explained)</strong></td>
+            <td>0.5215</td>
+            <td>0.5173</td>
+          </tr>
+          <tr>
+            <td><strong>Mean Absolute Error</strong></td>
+            <td>0.0247 pp</td>
+            <td>0.0252 pp</td>
+          </tr>
+          <tr>
+            <td><strong>Root Mean Squared Error</strong></td>
+            <td>0.0326 pp</td>
+            <td>0.0332 pp</td>
+          </tr>
+          <tr>
+            <td><strong>Shrinkage (Train vs Test)</strong></td>
+            <td colspan="2">0.42 basis points</td>
+          </tr>
+          <tr>
+            <td><strong>Algorithm</strong></td>
+            <td colspan="2">HistGradientBoosting Regressor</td>
+          </tr>
+          <tr>
+            <td><strong>Features</strong></td>
+            <td colspan="2">15 (13 numeric + 2 categorical)</td>
+          </tr>
+          <tr>
+            <td><strong>Training population</strong></td>
+            <td colspan="2">1,274,549 loans (2007 to 2018)</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- DISCLAIMERS -->
+  <section>
+    <h2>Disclaimers</h2>
+    <div class="card">
+      <p style="margin: 0; line-height: 1.8;">
+        This dashboard is provided for informational and educational purposes only. The analyses and projections contained herein are based on historical data and are subject to significant limitations. Default rates, loss predictions, and risk assessments are estimates only and may not reflect actual future performance. LendingClub terms and conditions, credit policies, and portfolio composition may change, affecting actual results. Past performance is not indicative of future results. All estimates are model based and assumption sensitive; see Methodology. No warranties or representations are made regarding accuracy or completeness of data or analyses.
+      </p>
+    </div>
+  </section>
+
+  <!-- CONTACTS -->
+  <section>
+    <h2>Document Information</h2>
+    <div class="card">
+      <p><strong>Data Source:</strong> LendingClub accepted loans dataset (kaggle.com/wordsforthewise/lending-club)</p>
+      <p><strong>Analysis Period:</strong> 2007 to 2018 Q4</p>
+      <p><strong>Population:</strong> 1,274,549 loans</p>
+      <p><strong>Portfolio Value:</strong> 18.5 billion dollars</p>
+      <p><strong>Last Updated:</strong> <span id="update-date">--</span></p>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <p>For questions or feedback on methodology, contact the analytics team.</p>
+</footer>
+
+<script src="js/main.js"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    document.getElementById('update-date').textContent = getLastUpdated();
+    initPage('assumptions');
+  });
+</script>
+
+</body>
+</html>

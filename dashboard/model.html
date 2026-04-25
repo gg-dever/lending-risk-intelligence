@@ -1,0 +1,662 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Rate Predictor – LendingClub 2007–2018</title>
+  <link rel="stylesheet" href="css/main.css">
+</head>
+<body>
+
+<nav class="navbar">
+  <div class="navbar-container">
+    <div class="navbar-title-wrap">
+      <a href="index.html" class="navbar-brand">
+        <span class="brand-name">LendingClub</span>
+        <small>2007 to 2018</small>
+      </a>
+      <span class="navbar-byline">A dashboard by Gage Gaubert</span>
+    </div>
+    <ul class="navbar-menu">
+      <li><a href="index.html" data-page="home">Home</a></li>
+      <li><a href="grade.html" data-page="grade">Risk by Grade</a></li>
+      <li><a href="term.html" data-page="term">Risk by Term</a></li>
+      <li><a href="purpose.html" data-page="purpose">Risk by Purpose</a></li>
+      <li><a href="borrower.html" data-page="borrower">Borrower Profile</a></li>
+      <li><a href="cohorts.html" data-page="cohorts">At Risk Cohorts</a></li>
+      <li><a href="model.html" data-page="model" class="active">Rate Predictor</a></li>
+      <li><a href="assumptions.html" data-page="assumptions">Methodology</a></li>
+    </ul>
+    <span class="navbar-timestamp">Updated: --:--</span>
+  </div>
+</nav>
+
+<main>
+
+  <section>
+    <h1>Interest Rate Predictor</h1>
+    <p>LendingClub's interest rate pricing is largely systematic and driven by a handful of identifiable factors. This analysis breaks down which borrower attributes most influence the rate a borrower receives, and what that means for investors.</p>
+  </section>
+
+  <!-- INVESTOR TAKEAWAYS -->
+  <section>
+    <div class="grid-2">
+      <div class="card">
+        <h3>What this means for investors</h3>
+        <ul style="margin: var(--gap-md) 0; padding-left: 1.5rem; line-height: 1.9;">
+          <li>In this sample, rate is a useful proxy for credit risk. Borrowers assigned higher rates tend to default at higher rates</li>
+          <li>Loan term is one of the strongest drivers of rate. 60 month loans tend to carry higher rates</li>
+          <li>FICO score is among the largest drivers, consistent with creditworthiness being priced into rates</li>
+          <li>About half of rate variance is explained by publicly available origination data, while the remainder may reflect unobserved underwriting factors including proprietary subgrade assignments</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>Reading the chart</h3>
+        <p style="line-height: 1.9; margin-bottom: var(--gap-md);">The bars below show how much each feature contributes to rate determination. Higher importance means the model's accuracy drops more when that feature is removed, indicating stronger influence on pricing.</p>
+        <p style="line-height: 1.9;">A relatively stable rate structure can support portfolio analysis by suggesting that yield differences are related to measurable risk drivers rather than purely random variation.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- FEATURE IMPORTANCE -->
+  <section>
+    <h2>What Drives the Rate?</h2>
+    <div class="card">
+      <p>Top 10 features ranked by influence on interest rate assignment. Term length and FICO score together account for more than half of overall rate determination.</p>
+      <div class="chart-container tall">
+        <canvas id="feature-importance-chart"></canvas>
+      </div>
+    </div>
+  </section>
+
+  <!-- RATE PREDICTOR CHART -->
+  <section>
+    <h2>Predicted Rate by FICO Score</h2>
+    <div class="card">
+      <p>Drag the controls to set borrower profile inputs. The chart updates the predicted rate line and shaded prediction interval across the full FICO range.</p>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: var(--gap-md); margin-bottom: var(--gap-md);">
+        <div>
+          <label style="font-size: 0.8rem; color: var(--text-secondary); display: block; margin-bottom: 0.25rem;">Term: <strong id="lbl-term">36 month</strong></label>
+          <div class="predictor-button-row">
+            <button id="btn-term-36" class="predictor-button active" type="button">36 month</button>
+            <button id="btn-term-60" class="predictor-button" type="button">60 month</button>
+          </div>
+        </div>
+        <div>
+          <label style="font-size: 0.8rem; color: var(--text-secondary); display: block; margin-bottom: 0.25rem;">Loan Amount: <strong id="lbl-amount">$15,000</strong></label>
+          <input type="range" id="sl-amount" min="1000" max="40000" step="500" value="15000" style="width: 100%; accent-color: var(--accent-blue);">
+          <div style="display: flex; justify-content: space-between; font-size: 0.72rem; color: var(--text-secondary);"><span>$1K</span><span>$40K</span></div>
+        </div>
+        <div>
+          <label style="font-size: 0.8rem; color: var(--text-secondary); display: block; margin-bottom: 0.25rem;">Annual Income: <strong id="lbl-income">$65,000</strong></label>
+          <input type="range" id="sl-income" min="20000" max="200000" step="5000" value="65000" style="width: 100%; accent-color: var(--accent-blue);">
+          <div style="display: flex; justify-content: space-between; font-size: 0.72rem; color: var(--text-secondary);"><span>$20K</span><span>$200K</span></div>
+        </div>
+      </div>
+
+      <div class="chart-container tall">
+        <canvas id="rate-predictor-chart"></canvas>
+      </div>
+
+      <p style="margin-top: var(--gap-md); font-size: 0.82rem; color: var(--text-secondary); line-height: 1.7;">
+        The shaded band reflects model uncertainty from historical test error and widens modestly for noisier profiles. Even within a single FICO bucket, rate spread may persist due to underwriting inputs not captured in this public dataset.
+      </p>
+    </div>
+  </section>
+
+  <section>
+    <h2>Manual Scenario Builder</h2>
+    <div class="card scenario-builder">
+      <p>Set the borrower inputs directly. The live range below converts your manual selections into a central rate estimate and a likely pricing band.</p>
+
+      <div class="scenario-top-row">
+        <div class="scenario-term-group">
+          <label>Term</label>
+          <div class="predictor-button-row">
+            <button id="manual-term-36" class="predictor-button active" type="button">36 month</button>
+            <button id="manual-term-60" class="predictor-button" type="button">60 month</button>
+          </div>
+        </div>
+        <p style="margin: 0; font-size: 0.8rem; color: var(--text-secondary); line-height: 1.6; max-width: 520px;">These ten controls approximate the main origination factors used in pricing. Higher risk inputs push the estimate and the likely range upward.</p>
+      </div>
+
+      <div class="vertical-slider-grid">
+        <div class="vertical-control">
+          <div class="vertical-value" id="manual-fico-value">700</div>
+          <div class="vertical-slider-shell"><input type="range" id="manual-fico" min="620" max="850" step="5" value="700"></div>
+          <div class="vertical-label">FICO</div>
+        </div>
+        <div class="vertical-control">
+          <div class="vertical-value" id="manual-amount-value">$15K</div>
+          <div class="vertical-slider-shell"><input type="range" id="manual-amount" min="1000" max="40000" step="500" value="15000"></div>
+          <div class="vertical-label">Loan Amount</div>
+        </div>
+        <div class="vertical-control">
+          <div class="vertical-value" id="manual-income-value">$65K</div>
+          <div class="vertical-slider-shell"><input type="range" id="manual-income" min="20000" max="200000" step="5000" value="65000"></div>
+          <div class="vertical-label">Income</div>
+        </div>
+        <div class="vertical-control">
+          <div class="vertical-value" id="manual-inquiries-value">1</div>
+          <div class="vertical-slider-shell"><input type="range" id="manual-inquiries" min="0" max="8" step="1" value="1"></div>
+          <div class="vertical-label">Inquiries</div>
+        </div>
+        <div class="vertical-control">
+          <div class="vertical-value" id="manual-purpose-value">Debt Consolidation</div>
+          <div class="vertical-slider-shell"><input type="range" id="manual-purpose" min="0" max="4" step="1" value="1"></div>
+          <div class="vertical-label">Purpose</div>
+        </div>
+        <div class="vertical-control">
+          <div class="vertical-value" id="manual-home-value">Mortgage</div>
+          <div class="vertical-slider-shell"><input type="range" id="manual-home" min="0" max="2" step="1" value="1"></div>
+          <div class="vertical-label">Home Ownership</div>
+        </div>
+        <div class="vertical-control">
+          <div class="vertical-value" id="manual-delinq-value">0</div>
+          <div class="vertical-slider-shell"><input type="range" id="manual-delinq" min="0" max="5" step="1" value="0"></div>
+          <div class="vertical-label">Delinquencies</div>
+        </div>
+        <div class="vertical-control">
+          <div class="vertical-value" id="manual-open-value">11</div>
+          <div class="vertical-slider-shell"><input type="range" id="manual-open" min="2" max="30" step="1" value="11"></div>
+          <div class="vertical-label">Open Accounts</div>
+        </div>
+        <div class="vertical-control">
+          <div class="vertical-value" id="manual-public-value">0</div>
+          <div class="vertical-slider-shell"><input type="range" id="manual-public" min="0" max="4" step="1" value="0"></div>
+          <div class="vertical-label">Public Records</div>
+        </div>
+        <div class="vertical-control">
+          <div class="vertical-value" id="manual-util-value">45%</div>
+          <div class="vertical-slider-shell"><input type="range" id="manual-util" min="0" max="100" step="1" value="45"></div>
+          <div class="vertical-label">Revolving Use</div>
+        </div>
+      </div>
+
+      <div class="scenario-output-wrap">
+        <div class="scenario-output-box">
+          <div class="scenario-output-title">Expected Interest Rate Range</div>
+          <div class="scenario-output-range" id="manual-range-rate">8.0% to 16.0%</div>
+          <div class="scenario-output-note">Central estimate <span id="manual-central-rate">12.0%</span></div>
+        </div>
+      </div>
+
+      <div>
+        <div class="range-meter-labels">
+          <span>5%</span>
+          <span>12.5%</span>
+          <span>20%</span>
+          <span>27.5%</span>
+          <span>35%</span>
+        </div>
+        <div class="range-meter">
+          <div id="manual-range-fill" class="range-meter-fill"></div>
+          <div id="manual-range-point" class="range-meter-point"></div>
+        </div>
+        <div class="range-meter-zones">
+          <span>Prime</span>
+          <span>Core</span>
+          <span>Non prime</span>
+          <span>Deep risk</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <p>Technical model specifications and validation metrics are documented in the <a href="assumptions.html" style="color: var(--accent-blue); text-decoration: none;">Methodology</a> section.</p>
+</footer>
+
+<script src="js/main.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+<script>
+
+async function loadModelData() {
+
+  const features = [
+    { name: '60 Month Term',          importance: 0.277 },
+    { name: 'FICO Score',            importance: 0.242 },
+    { name: 'Loan Amount',           importance: 0.099 },
+    { name: 'Inquiries (6mo)',       importance: 0.077 },
+    { name: 'Loan Purpose',          importance: 0.067 },
+    { name: 'Home Ownership',        importance: 0.062 },
+    { name: 'Delinquencies (2yr)',   importance: 0.052 },
+    { name: 'Open Accounts',         importance: 0.041 },
+    { name: 'Public Records',        importance: 0.038 },
+    { name: 'Revolving Utilization', importance: 0.027 }
+  ];
+
+  const featureColors = ['#d02d26','#e74c3c','#e63946','#e67e22','#f39c12','#f39c12','#f1c40f','#f1c40f','#f1c40f','#f1c40f'];
+
+  // Feature importance chart — horizontal bar
+  const ctx = document.getElementById('feature-importance-chart').getContext('2d');
+  new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: features.map(f => f.name),
+      datasets: [{
+        label: 'Permutation Importance (R² decrease)',
+        data: features.map(f => f.importance),
+        backgroundColor: featureColors,
+        borderColor: 'transparent',
+        barPercentage: 0.5,
+        categoryPercentage: 0.65
+      }]
+    },
+    options: {
+      indexAxis: 'y',
+      responsive: true,
+      maintainAspectRatio: false,
+      scales: {
+        x: {
+          beginAtZero: true,
+          max: 0.30,
+          ticks: { callback: v => v.toFixed(2) }
+        },
+        y: {
+          ticks: { font: { size: 11 } }
+        }
+      },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: ctx => 'Importance: ' + ctx.parsed.x.toFixed(3)
+          }
+        }
+      }
+    }
+  });
+
+  const hgbModel = await loadJSON('data/hgb_rate_model.json');
+  if (!hgbModel) return;
+
+  const rmsePct = hgbModel.metrics.test_rmse * 100;
+  const featureBounds = hgbModel.feature_bounds || {};
+
+  function clampToBounds(featureName, value) {
+    const bounds = featureBounds[featureName];
+    if (!bounds || typeof value !== 'number' || Number.isNaN(value)) return value;
+    return Math.max(bounds.low, Math.min(bounds.high, value));
+  }
+
+  function applyBounds(profile) {
+    const merged = { ...hgbModel.defaults, ...profile };
+    Object.keys(featureBounds).forEach(featureName => {
+      if (typeof merged[featureName] === 'number') {
+        merged[featureName] = clampToBounds(featureName, merged[featureName]);
+      }
+    });
+    return merged;
+  }
+
+  function encodeCategory(featureName, rawValue) {
+    const levels = hgbModel.categorical_levels[featureName] || [];
+    const idx = levels.indexOf(rawValue);
+    return idx === -1 ? -1 : idx;
+  }
+
+  function buildModelInput(profile) {
+    const base = applyBounds(profile);
+    const ficoSq = Math.pow(base.fico_score - hgbModel.fico_center, 2);
+
+    return [
+      base.loan_amnt,
+      base.annual_inc,
+      base.dti,
+      base.fico_score,
+      ficoSq,
+      base.inq_last_6mths,
+      base.open_acc,
+      base.pub_rec,
+      base.revol_bal,
+      base.revol_util,
+      base.total_acc,
+      base.delinq_2yrs,
+      base.is_60mo,
+      encodeCategory('purpose', base.purpose),
+      encodeCategory('home_ownership', base.home_ownership)
+    ];
+  }
+
+  function treePredict(nodes, values) {
+    let idx = 0;
+    while (true) {
+      const node = nodes[idx];
+      if (node.leaf) return node.v;
+      const value = values[node.f];
+      const goLeft = Number.isNaN(value) ? node.m : value <= node.t;
+      idx = goLeft ? node.l : node.r;
+    }
+  }
+
+  function predictRate(profile) {
+    const bounded = applyBounds(profile);
+    const values = buildModelInput(bounded);
+    let raw = hgbModel.baseline_prediction;
+    for (const tree of hgbModel.trees) {
+      raw += treePredict(tree, values);
+    }
+    return raw * 100;
+  }
+
+  function rangeHalfWidth(profile) {
+    const profileSpread =
+      (profile.delinq_2yrs || 0) * 0.25 +
+      (profile.pub_rec || 0) * 0.25 +
+      (profile.inq_last_6mths || 0) * 0.08 +
+      (profile.revol_util || 0) * 0.005;
+    return Math.max(2.2, Math.min(6.2, rmsePct + profileSpread));
+  }
+
+  const ficoRange = [];
+  const ficoLow = Math.round((featureBounds.fico_score?.low || 662) / 5) * 5;
+  const ficoHigh = Math.round((featureBounds.fico_score?.high || 802) / 5) * 5;
+  for (let f = ficoLow; f <= ficoHigh; f += 5) ficoRange.push(f);
+  let selectedTerm = 0;
+
+  function setRangeBounds(id, low, high, step) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.min = String(low);
+    el.max = String(high);
+    el.step = String(step);
+    const curr = parseFloat(el.value);
+    if (Number.isNaN(curr) || curr < low || curr > high) {
+      el.value = String(Math.round((low + high) / 2));
+    }
+  }
+
+  setRangeBounds('sl-amount', Math.round(featureBounds.loan_amnt?.low || 1500), Math.round(featureBounds.loan_amnt?.high || 35000), 500);
+  setRangeBounds('sl-income', Math.round(featureBounds.annual_inc?.low || 20000), Math.round(featureBounds.annual_inc?.high || 260000), 5000);
+  setRangeBounds('manual-fico', ficoLow, ficoHigh, 5);
+  setRangeBounds('manual-amount', Math.round(featureBounds.loan_amnt?.low || 1500), Math.round(featureBounds.loan_amnt?.high || 35000), 500);
+  setRangeBounds('manual-income', Math.round(featureBounds.annual_inc?.low || 20000), Math.round(featureBounds.annual_inc?.high || 260000), 5000);
+  setRangeBounds('manual-inquiries', Math.round(featureBounds.inq_last_6mths?.low || 0), Math.round(featureBounds.inq_last_6mths?.high || 4), 1);
+  setRangeBounds('manual-delinq', Math.round(featureBounds.delinq_2yrs?.low || 0), Math.round(featureBounds.delinq_2yrs?.high || 4), 1);
+  setRangeBounds('manual-open', Math.round(featureBounds.open_acc?.low || 3), Math.round(featureBounds.open_acc?.high || 29), 1);
+  setRangeBounds('manual-public', Math.round(featureBounds.pub_rec?.low || 0), Math.round(featureBounds.pub_rec?.high || 2), 1);
+  setRangeBounds('manual-util', Math.round((featureBounds.revol_util?.low || 0.02) * 100), Math.round((featureBounds.revol_util?.high || 0.98) * 100), 1);
+
+  function buildChartData() {
+    const is60mo = selectedTerm;
+    const amount = parseFloat(document.getElementById('sl-amount').value);
+    const income = parseFloat(document.getElementById('sl-income').value);
+    return ficoRange.map(fico => ({
+      fico,
+      pred: predictRate({
+        fico_score: fico,
+        is_60mo: is60mo,
+        loan_amnt: amount,
+        annual_inc: income,
+      }),
+      upper: Math.min(35, predictRate({
+        fico_score: fico,
+        is_60mo: is60mo,
+        loan_amnt: amount,
+        annual_inc: income,
+      }) + rangeHalfWidth({
+        fico_score: fico,
+        is_60mo: is60mo,
+        loan_amnt: amount,
+        annual_inc: income,
+      })),
+      lower: Math.max(5, predictRate({
+        fico_score: fico,
+        is_60mo: is60mo,
+        loan_amnt: amount,
+        annual_inc: income,
+      }) - rangeHalfWidth({
+        fico_score: fico,
+        is_60mo: is60mo,
+        loan_amnt: amount,
+        annual_inc: income,
+      }))
+    }));
+  }
+
+  const predCtx = document.getElementById('rate-predictor-chart').getContext('2d');
+  const predChart = new Chart(predCtx, {
+    type: 'line',
+    data: { labels: ficoRange, datasets: [
+      {
+        label: 'Upper CI',
+        data: [],
+        borderColor: 'transparent',
+        backgroundColor: 'rgba(52,152,219,0.12)',
+        fill: '+1',
+        pointRadius: 0,
+        tension: 0.4
+      },
+      {
+        label: 'Predicted Rate',
+        data: [],
+        borderColor: '#3498db',
+        backgroundColor: 'transparent',
+        borderWidth: 2.5,
+        pointRadius: 0,
+        tension: 0.4
+      },
+      {
+        label: 'Lower CI',
+        data: [],
+        borderColor: 'transparent',
+        backgroundColor: 'rgba(52,152,219,0.12)',
+        fill: '-1',
+        pointRadius: 0,
+        tension: 0.4
+      }
+    ]},
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      interaction: { mode: 'index', intersect: false },
+      scales: {
+        x: {
+          title: { display: true, text: 'FICO Score', color: '#7c8494', font: { size: 11 } },
+          ticks: { color: '#7c8494', font: { size: 10 }, maxTicksLimit: 10 }
+        },
+        y: {
+          title: { display: true, text: 'Predicted Interest Rate (%)', color: '#7c8494', font: { size: 11 } },
+          min: 0,
+          max: 36,
+          ticks: { callback: v => v + '%', color: '#7c8494', font: { size: 10 } }
+        }
+      },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            title: items => 'FICO ' + items[0].label,
+            label: item => {
+              if (item.datasetIndex === 1) return 'Predicted: ' + item.parsed.y.toFixed(1) + '%';
+              if (item.datasetIndex === 0) return '95% CI upper: ' + item.parsed.y.toFixed(1) + '%';
+              if (item.datasetIndex === 2) return '95% CI lower: ' + item.parsed.y.toFixed(1) + '%';
+            }
+          }
+        }
+      }
+    }
+  });
+
+  function updatePredictorChart() {
+    const data = buildChartData();
+    predChart.data.datasets[0].data = data.map(d => d.upper);
+    predChart.data.datasets[1].data = data.map(d => d.pred);
+    predChart.data.datasets[2].data = data.map(d => d.lower);
+    predChart.update('none');
+  }
+
+  function bindSlider(id, labelId, fmt) {
+    const el = document.getElementById(id);
+    const lbl = document.getElementById(labelId);
+    el.addEventListener('input', () => { lbl.textContent = fmt(el.value); updatePredictorChart(); });
+  }
+
+  bindSlider('sl-amount', 'lbl-amount', v => '$' + parseInt(v).toLocaleString());
+  bindSlider('sl-income', 'lbl-income', v => '$' + parseInt(v).toLocaleString());
+
+  const btn36 = document.getElementById('btn-term-36');
+  const btn60 = document.getElementById('btn-term-60');
+  const lblTerm = document.getElementById('lbl-term');
+
+  function applyTermButtons() {
+    if (selectedTerm === 0) {
+      btn36.classList.add('active');
+      btn60.classList.remove('active');
+      lblTerm.textContent = '36 month';
+    } else {
+      btn60.classList.add('active');
+      btn36.classList.remove('active');
+      lblTerm.textContent = '60 month';
+    }
+  }
+
+  btn36.addEventListener('click', () => {
+    selectedTerm = 0;
+    applyTermButtons();
+    updatePredictorChart();
+  });
+
+  btn60.addEventListener('click', () => {
+    selectedTerm = 1;
+    applyTermButtons();
+    updatePredictorChart();
+  });
+
+  function sortOptionsByPredictedRisk(options, featureName) {
+    return options
+      .map(option => ({
+        ...option,
+        score: predictRate({ [featureName]: option.value })
+      }))
+      .sort((a, b) => a.score - b.score)
+      .map(({ score, ...option }) => option);
+  }
+
+  const purposeOptions = sortOptionsByPredictedRisk(hgbModel.manual_options.purpose, 'purpose');
+  const homeOptions = sortOptionsByPredictedRisk(hgbModel.manual_options.home_ownership, 'home_ownership');
+
+  document.getElementById('manual-purpose').max = String(purposeOptions.length - 1);
+  document.getElementById('manual-home').max = String(homeOptions.length - 1);
+
+  const defaultPurposeIndex = Math.max(0, purposeOptions.findIndex(x => x.value === hgbModel.defaults.purpose));
+  const defaultHomeIndex = Math.max(0, homeOptions.findIndex(x => x.value === hgbModel.defaults.home_ownership));
+  document.getElementById('manual-purpose').value = String(defaultPurposeIndex);
+  document.getElementById('manual-home').value = String(defaultHomeIndex);
+  let manualSelectedTerm = 0;
+
+  const manualControls = {
+    fico: document.getElementById('manual-fico'),
+    amount: document.getElementById('manual-amount'),
+    income: document.getElementById('manual-income'),
+    inquiries: document.getElementById('manual-inquiries'),
+    purpose: document.getElementById('manual-purpose'),
+    home: document.getElementById('manual-home'),
+    delinq: document.getElementById('manual-delinq'),
+    open: document.getElementById('manual-open'),
+    publicRec: document.getElementById('manual-public'),
+    util: document.getElementById('manual-util')
+  };
+
+  const manualValues = {
+    fico: document.getElementById('manual-fico-value'),
+    amount: document.getElementById('manual-amount-value'),
+    income: document.getElementById('manual-income-value'),
+    inquiries: document.getElementById('manual-inquiries-value'),
+    purpose: document.getElementById('manual-purpose-value'),
+    home: document.getElementById('manual-home-value'),
+    delinq: document.getElementById('manual-delinq-value'),
+    open: document.getElementById('manual-open-value'),
+    publicRec: document.getElementById('manual-public-value'),
+    util: document.getElementById('manual-util-value')
+  };
+
+  function getManualProfile() {
+    return {
+      fico_score: parseFloat(manualControls.fico.value),
+      is_60mo: manualSelectedTerm,
+      loan_amnt: parseFloat(manualControls.amount.value),
+      annual_inc: parseFloat(manualControls.income.value),
+      inq_last_6mths: parseFloat(manualControls.inquiries.value),
+      purpose: purposeOptions[parseInt(manualControls.purpose.value)].value,
+      home_ownership: homeOptions[parseInt(manualControls.home.value)].value,
+      delinq_2yrs: parseFloat(manualControls.delinq.value),
+      open_acc: parseFloat(manualControls.open.value),
+      pub_rec: parseFloat(manualControls.publicRec.value),
+      revol_util: parseFloat(manualControls.util.value) / 100
+    };
+  }
+
+  function renderManualValues() {
+    manualValues.fico.textContent = manualControls.fico.value;
+    manualValues.amount.textContent = '$' + Math.round(manualControls.amount.value / 1000) + 'K';
+    manualValues.income.textContent = '$' + Math.round(manualControls.income.value / 1000) + 'K';
+    manualValues.inquiries.textContent = manualControls.inquiries.value;
+    manualValues.purpose.textContent = purposeOptions[parseInt(manualControls.purpose.value)].label;
+    manualValues.home.textContent = homeOptions[parseInt(manualControls.home.value)].label;
+    manualValues.delinq.textContent = manualControls.delinq.value;
+    manualValues.open.textContent = manualControls.open.value;
+    manualValues.publicRec.textContent = manualControls.publicRec.value;
+    manualValues.util.textContent = manualControls.util.value + '%';
+  }
+
+  function applyManualTermButtons() {
+    document.getElementById('manual-term-36').classList.toggle('active', manualSelectedTerm === 0);
+    document.getElementById('manual-term-60').classList.toggle('active', manualSelectedTerm === 1);
+  }
+
+  function updateManualScenario() {
+    renderManualValues();
+    const profile = getManualProfile();
+    const center = predictRate(profile);
+    const half = rangeHalfWidth(profile);
+    const lower = Math.max(5, center - half);
+    const upper = Math.min(35, center + half);
+    const minRate = 5;
+    const maxRate = 35;
+    const scale = maxRate - minRate;
+    const left = ((lower - minRate) / scale) * 100;
+    const width = ((upper - lower) / scale) * 100;
+    const point = ((center - minRate) / scale) * 100;
+    document.getElementById('manual-central-rate').textContent = center.toFixed(1) + '%';
+    document.getElementById('manual-range-rate').textContent = lower.toFixed(1) + '% to ' + upper.toFixed(1) + '%';
+    document.getElementById('manual-range-fill').style.left = left + '%';
+    document.getElementById('manual-range-fill').style.width = width + '%';
+    document.getElementById('manual-range-point').style.left = Math.max(0, Math.min(100, point)) + '%';
+  }
+
+  Object.values(manualControls).forEach(control => {
+    control.addEventListener('input', updateManualScenario);
+  });
+
+  document.getElementById('manual-term-36').addEventListener('click', () => {
+    manualSelectedTerm = 0;
+    applyManualTermButtons();
+    updateManualScenario();
+  });
+
+  document.getElementById('manual-term-60').addEventListener('click', () => {
+    manualSelectedTerm = 1;
+    applyManualTermButtons();
+    updateManualScenario();
+  });
+
+  applyTermButtons();
+  applyManualTermButtons();
+
+  updatePredictorChart();
+  updateManualScenario();
+
+  initPage('model');
+}
+
+document.addEventListener('DOMContentLoaded', loadModelData);
+
+</script>
+
+</body>
+</html>

@@ -16,7 +16,9 @@ immune to multicollinearity.
 Run after clean.py.
 """
 
+import json
 import logging
+import os
 import pandas as pd
 import numpy as np
 from sklearn.compose import ColumnTransformer
@@ -221,6 +223,103 @@ def feature_importance_table(pipeline: Pipeline, X_test, y_test,
 # ============================================================================
 
 
+def serialize_tree(tree) -> list[dict]:
+    """Convert a sklearn TreePredictor into a compact JSON-friendly structure."""
+    nodes = []
+    for node in tree.nodes:
+        nodes.append({
+            'f': int(node['feature_idx']),
+            't': None if bool(node['is_leaf']) else float(node['num_threshold']),
+            'l': int(node['left']),
+            'r': int(node['right']),
+            'm': bool(node['missing_go_to_left']),
+            'leaf': bool(node['is_leaf']),
+            'v': float(node['value']),
+        })
+    return nodes
+
+
+def export_dashboard_model(pipeline: Pipeline, X_reference: pd.DataFrame,
+                           metrics: dict, out_path: str) -> None:
+    """Export the fitted HGB model so the dashboard can score inputs in-browser."""
+    preprocessor = pipeline.named_steps['preprocessor']
+    regressor = pipeline.named_steps['regressor']
+    encoder = preprocessor.named_transformers_['categorical']
+
+    defaults = {
+        'loan_amnt': float(X_reference['loan_amnt'].median()),
+        'annual_inc': float(X_reference['annual_inc'].median()),
+        'dti': float(X_reference['dti'].median()),
+        'fico_score': float(X_reference['fico_score'].median()),
+        'inq_last_6mths': float(X_reference['inq_last_6mths'].median()),
+        'open_acc': float(X_reference['open_acc'].median()),
+        'pub_rec': float(X_reference['pub_rec'].median()),
+        'revol_bal': float(X_reference['revol_bal'].median()),
+        'revol_util': float(X_reference['revol_util'].median()),
+        'total_acc': float(X_reference['total_acc'].median()),
+        'delinq_2yrs': float(X_reference['delinq_2yrs'].median()),
+        'is_60mo': int(round(X_reference['is_60mo'].median())),
+        'purpose': str(X_reference['purpose'].mode().iloc[0]),
+        'home_ownership': str(X_reference['home_ownership'].mode().iloc[0]),
+    }
+
+    feature_bounds = {}
+    for feature in NUMERIC_FEATURES:
+        series = X_reference[feature].astype(float)
+        feature_bounds[feature] = {
+            'low': float(series.quantile(0.01)),
+            'high': float(series.quantile(0.99)),
+            'min': float(series.min()),
+            'max': float(series.max()),
+        }
+
+    feature_bounds['is_60mo'] = {
+        'low': 0.0,
+        'high': 1.0,
+        'min': 0.0,
+        'max': 1.0,
+    }
+
+    payload = {
+        'baseline_prediction': float(np.ravel(regressor._baseline_prediction)[0]),
+        'features': NUMERIC_FEATURES + BINARY_FEATURES + CATEGORICAL_FEATURES,
+        'numeric_features': NUMERIC_FEATURES,
+        'binary_features': BINARY_FEATURES,
+        'categorical_features': CATEGORICAL_FEATURES,
+        'categorical_levels': {
+            'purpose': [str(v) for v in encoder.categories_[0]],
+            'home_ownership': [str(v) for v in encoder.categories_[1]],
+        },
+        'defaults': defaults,
+        'feature_bounds': feature_bounds,
+        'fico_center': float(X_reference['fico_score'].mean()),
+        'metrics': {
+            'test_rmse': float(metrics['test_rmse']),
+            'test_mae': float(metrics['test_mae']),
+            'test_r2': float(metrics['test_r2']),
+        },
+        'manual_options': {
+            'purpose': [
+                {'label': 'Credit Card', 'value': 'credit_card'},
+                {'label': 'Debt Consolidation', 'value': 'debt_consolidation'},
+                {'label': 'Home Improvement', 'value': 'home_improvement'},
+                {'label': 'Major Purchase', 'value': 'major_purchase'},
+                {'label': 'Small Business', 'value': 'small_business'},
+            ],
+            'home_ownership': [
+                {'label': 'Rent', 'value': 'RENT'},
+                {'label': 'Mortgage', 'value': 'MORTGAGE'},
+                {'label': 'Own', 'value': 'OWN'},
+            ],
+        },
+        'trees': [serialize_tree(predictors[0]) for predictors in regressor._predictors],
+    }
+
+    os.makedirs(os.path.dirname(out_path), exist_ok=True)
+    with open(out_path, 'w') as file_handle:
+        json.dump(payload, file_handle, separators=(',', ':'))
+
+
 def main():
     X, y = load_data()
 
@@ -235,40 +334,53 @@ def main():
     pipeline.fit(X_train, y_train)
     log.info('Pipeline fitted')
 
-    metrics     = evaluate(pipeline, X_train, X_test, y_train, y_test)
+    metrics = evaluate(pipeline, X_train, X_test, y_train, y_test)
     log.info('Computing permutation importances (10K sample, 5 repeats)...')
     importances = feature_importance_table(pipeline, X_test, y_test)
 
     shrinkage_bps = (metrics['train_r2'] - metrics['test_r2']) * 10_000
 
-    print('\n── Model Performance ──────────────────────────────')
-    print(f"  Train R²:    {metrics['train_r2']:.4f}")
-    print(f"  Test  R²:    {metrics['test_r2']:.4f}  (shrinkage: {shrinkage_bps:.1f} bps)")
+    print('\nModel Performance')
+    print(f"  Train R2:    {metrics['train_r2']:.4f}")
+    print(f"  Test  R2:    {metrics['test_r2']:.4f}  (shrinkage: {shrinkage_bps:.1f} bps)")
     print(f"  Train MAE:   {metrics['train_mae']:.4f} pp")
     print(f"  Test  MAE:   {metrics['test_mae']:.4f} pp")
     print(f"  Train RMSE:  {metrics['train_rmse']:.4f} pp")
     print(f"  Test  RMSE:  {metrics['test_rmse']:.4f} pp")
 
-    print('\n── Feature Importances (permutation, R² decrease) ───')
+    print('\nFeature Importances (permutation, R2 decrease)')
     print(importances.to_string(index=False))
 
+    out_dir = 'stages/05-model/output'
+    os.makedirs(out_dir, exist_ok=True)
+
+    perf_out = {
+        'train_r2': round(metrics['train_r2'], 4),
+        'test_r2': round(metrics['test_r2'], 4),
+        'train_mae': round(metrics['train_mae'], 4),
+        'test_mae': round(metrics['test_mae'], 4),
+        'train_rmse': round(metrics['train_rmse'], 4),
+        'test_rmse': round(metrics['test_rmse'], 4),
+        'shrinkage_bps': round(shrinkage_bps, 2),
+        'sample_size': len(X_train) + len(X_test),
+        'feature_count': len(FEATURES),
+    }
+    with open(f'{out_dir}/model_performance.json', 'w') as file_handle:
+        json.dump(perf_out, file_handle, indent=2)
+
+    imp_out = importances[['feature', 'importance_mean', 'importance_std']].to_dict(orient='records')
+    with open(f'{out_dir}/feature_importance.json', 'w') as file_handle:
+        json.dump(imp_out, file_handle, indent=2)
+
+    export_dashboard_model(
+        pipeline,
+        X,
+        metrics,
+        'dashboard/data/hgb_rate_model.json',
+    )
+
+    log.info('Outputs written to %s and dashboard/data', out_dir)
     return pipeline, metrics, importances
-
-
-if __name__ == '__main__':
-    main()
-
-
-def run_audit(df_scored, model_performance):
-    pass
-
-
-def write_outputs(df_scored, production_model, model_performance):
-    pass
-
-
-def main():
-    pass
 
 
 if __name__ == '__main__':

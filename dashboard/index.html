@@ -1,78 +1,319 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lending Risk Intelligence — Executive Summary</title>
-    <link rel="stylesheet" href="styles/main.css">
-    <link rel="stylesheet" href="styles/charts.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LendingClub 2007–2018 Analysis and Modeling</title>
+  <link rel="stylesheet" href="css/main.css">
 </head>
 <body>
-    <div class="container">
-        <nav class="top-nav">
-            <h1>Lending Risk Intelligence</h1>
-            <ul>
-                <li><a href="index.html" class="active">Summary</a></li>
-                <li><a href="segments.html">Segments</a></li>
-                <li><a href="exposure.html">Exposure</a></li>
-            </ul>
-        </nav>
 
-        <!-- HEADLINE FIGURES: Above the fold, above all else -->
-        <section class="headline">
-            <div class="card metric">
-                <h3>Portfolio Value</h3>
-                <p class="value" id="portfolio-value">—</p>
-            </div>
-            <div class="card metric">
-                <h3>Default Rate</h3>
-                <p class="value" id="default-rate">—</p>
-            </div>
-            <div class="card metric">
-                <h3>Expected Loss</h3>
-                <p class="value" id="expected-loss">—</p>
-            </div>
-            <div class="card metric">
-                <h3>Loss Rate</h3>
-                <p class="value" id="loss-rate">—</p>
-            </div>
-        </section>
+<!-- NAVBAR -->
+<nav class="navbar">
+  <div class="navbar-container">
+    <div class="navbar-title-wrap">
+      <a href="index.html" class="navbar-brand">
+        <span class="brand-name">LendingClub</span>
+        <small>2007 to 2018</small>
+      </a>
+      <span class="navbar-byline">A dashboard by Gage Gaubert</span>
+    </div>
+    <ul class="navbar-menu">
+      <li><a href="index.html" data-page="home" class="active">Home</a></li>
+      <li><a href="grade.html" data-page="grade">Risk by Grade</a></li>
+      <li><a href="term.html" data-page="term">Risk by Term</a></li>
+      <li><a href="purpose.html" data-page="purpose">Risk by Purpose</a></li>
+      <li><a href="borrower.html" data-page="borrower">Borrower Profile</a></li>
+      <li><a href="cohorts.html" data-page="cohorts">At Risk Cohorts</a></li>
+      <li><a href="model.html" data-page="model">Rate Predictor</a></li>
+      <li><a href="assumptions.html" data-page="assumptions">Methodology</a></li>
+    </ul>
+    <span class="navbar-timestamp">Updated: --:--</span>
+  </div>
+</nav>
 
-        <!-- DRILL-DOWN: Portfolio context -->
-        <section class="context">
-            <div class="card">
-                <h3>Portfolio Composition</h3>
-                <table id="portfolio-table">
-                    <thead>
-                        <tr><th>Metric</th><th>Value</th></tr>
-                    </thead>
-                    <tbody>
-                        <!-- Populated by JS -->
-                    </tbody>
-                </table>
-            </div>
+<!-- MAIN CONTENT -->
+<main>
 
-            <div class="card">
-                <h3>Default Rate by Grade</h3>
-                <div id="grade-chart"></div>
-            </div>
-        </section>
+  <!-- PAGE TITLE -->
+  <section>
+    <h1>Portfolio Risk Dashboard</h1>
+    <p>Overview of lending portfolio composition, risk concentration, and expected loss allocation.</p>
+  </section>
 
-        <!-- CRISIS NOTE -->
-        <section class="note">
-            <p><strong>Note:</strong> Crisis-era loans (2008–2010) have elevated default rates. These cohorts are flagged separately in the Segments view. Portfolio baseline should not be inferred from crisis period alone.</p>
-        </section>
-
-        <footer>
-            <p>Last updated: <span id="timestamp">—</span></p>
-        </footer>
+  <!-- HERO KPI CARDS -->
+  <section class="kpi-grid">
+    <div class="kpi-card">
+      <div class="kpi-label">Portfolio Value</div>
+      <div class="kpi-value" id="portfolio-value">--</div>
+      <div class="kpi-subtext" id="portfolio-count">-- loans</div>
     </div>
 
-    <script>
-        // TODO: Load portfolio_headline.json and populate headline metrics
-        // TODO: Load portfolio composition data and render summary table
-        // TODO: Load grade breakdown and render chart
-        // TODO: Set timestamp to file generation time
-    </script>
+    <div class="kpi-card risk-red">
+      <div class="kpi-label">Default Rate</div>
+      <div class="kpi-value" id="default-rate" style="color: var(--text-primary);">--</div>
+      <div class="kpi-subtext">Portfolio-wide</div>
+    </div>
+
+    <div class="kpi-card risk-purple">
+      <div class="kpi-label">Expected Loss</div>
+      <div class="kpi-value" id="expected-loss">--</div>
+      <div class="kpi-subtext" id="loss-rate">-- of portfolio</div>
+    </div>
+
+    <div class="kpi-card">
+      <div class="kpi-label">Risk Status</div>
+      <div id="risk-status-badge" style="margin-top: var(--gap-sm);"></div>
+      <div class="kpi-subtext">Moderate to Elevated</div>
+    </div>
+  </section>
+
+  <!-- PORTFOLIO NARRATIVE -->
+  <section>
+    <h2>Portfolio Summary</h2>
+    <div class="card">
+      <p>The lending portfolio is approximately 18.5 billion dollars across about 1.27 million loans. The portfolio-wide default rate is approximately 19.6 percent, with risk concentrated in grade B and C loans, which represent 55 percent of portfolio value and about 48 percent of expected losses. Expected loss is estimated at roughly 1.1 billion dollars, equivalent to a 5.9 percent loss rate under a 70 percent recovery assumption on defaulted loans. Overall risk appears moderate to elevated, supported by concentration in 60 month loans, which account for 56 percent of expected losses while representing 21 percent of loan count.</p>
+    </div>
+  </section>
+
+  <!-- QUICK NAVIGATION CARDS -->
+  <section>
+    <h2>Portfolio Breakdown</h2>
+    <div class="grid-3">
+
+      <div class="card">
+        <h3>Risk by Grade</h3>
+        <p>Loan grade analysis shows default rates escalating from 5.8 percent in grade A to 49.3 percent in grade G. Understand concentration and exposure by credit tier.</p>
+        <div id="grade-stats"></div>
+        <a href="grade.html" style="display: inline-block; margin-top: var(--gap-sm); color: var(--accent-blue); text-decoration: none; font-weight: 500;">Explore</a>
+      </div>
+
+      <div class="card">
+        <h3>Risk by Term</h3>
+        <p>60 month loans show 32.1 percent default rate versus 15.5 percent for 36 month terms. Term length is a significant risk driver in the portfolio.</p>
+        <div id="term-stats"></div>
+        <a href="term.html" style="display: inline-block; margin-top: var(--gap-sm); color: var(--accent-blue); text-decoration: none; font-weight: 500;">Explore</a>
+      </div>
+
+      <div class="card">
+        <h3>High Risk Cohorts</h3>
+        <p>The top 15 cohorts driving expected loss are identified. Crisis era loans (2008 to 2010) are shown separately from baseline estimates to avoid mixing stress period behavior with normal period patterns.</p>
+        <div id="cohort-stats"></div>
+        <a href="cohorts.html" style="display: inline-block; margin-top: var(--gap-sm); color: var(--accent-blue); text-decoration: none; font-weight: 500;">Explore</a>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- RISK DISTRIBUTION -->
+  <section>
+    <h2>Portfolio Composition</h2>
+    <div class="grid-2">
+      <div class="card">
+        <h3>Portfolio Value by Grade</h3>
+        <div class="chart-container">
+          <canvas id="grade-value-chart"></canvas>
+        </div>
+      </div>
+      <div class="card">
+        <h3>Default Rate by Grade</h3>
+        <div class="chart-container">
+          <canvas id="default-rate-chart"></canvas>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- BOTTOM STATS -->
+  <section>
+    <div class="grid-2">
+      <div class="card">
+        <h3>Largest Loss Contributors</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>Grade</th>
+              <th>Expected Loss</th>
+              <th>Pct of Total</th>
+            </tr>
+          </thead>
+          <tbody id="top-grades-table"></tbody>
+        </table>
+      </div>
+      <div class="card">
+        <h3>Highest Default Rates</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>Grade</th>
+              <th>Default Rate</th>
+              <th>Loan Count</th>
+            </tr>
+          </thead>
+          <tbody id="highest-default-table"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<!-- FOOTER -->
+<footer>
+  <p>LendingClub 2007–2018 analysis and modeling. Data source: LendingClub accepted loans 2007–2018 Q4. Assumptions include 70% recovery rate and 30% loss given default. All estimates are model based and assumption sensitive; see Methodology.</p>
+</footer>
+
+<!-- SCRIPTS -->
+<script src="js/main.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+<script>
+
+async function loadHomeData() {
+
+  // Load portfolio headline
+  const headline = await loadJSON('../stages/04-exposure/output/portfolio_headline.json');
+  if (!headline) return;
+
+  // Load grade breakdown for charts
+  const grades = await loadJSON('../stages/03-segment/output/grade_breakdown.json');
+  if (!grades) return;
+
+  // Load exposure summary for top grades
+  const exposure = await loadCSV('../stages/04-exposure/output/exposure_summary.csv');
+
+  // Update KPI cards
+  document.getElementById('portfolio-value').textContent = formatCurrency(headline.portfolio_value_usd);
+  document.getElementById('portfolio-count').textContent = formatNumber(1274549) + ' loans';
+  document.getElementById('default-rate').textContent = formatPercent(headline.portfolio_default_rate_pct, 1);
+  document.getElementById('expected-loss').textContent = formatCurrency(headline.expected_loss_usd);
+  document.getElementById('loss-rate').textContent = formatPercent(headline.loss_rate_pct, 1) + ' of portfolio';
+
+  // Risk status badge
+  const riskLevel = headline.loss_rate_pct > 0.08 ? 'high' : headline.loss_rate_pct > 0.06 ? 'elevated' : 'moderate';
+  const badge = document.getElementById('risk-status-badge');
+  const badgeText = riskLevel.charAt(0).toUpperCase() + riskLevel.slice(1);
+  badge.innerHTML = '<span class="risk-badge ' + riskLevel + '">' + badgeText + '</span>';
+
+  // Grade stats
+  const gradeStats = grades[0];
+  document.getElementById('grade-stats').innerHTML = '<p><strong>Grade A:</strong> ' + formatPercent(gradeStats.default_rate, 1) + ' default</p><p><strong>Grade G:</strong> ' + formatPercent(grades[6].default_rate, 1) + ' default</p>';
+
+  // Term stats
+  const termData = await loadJSON('../stages/03-segment/output/term_breakdown.json');
+  const term36 = termData[0];
+  const term60 = termData[1];
+  document.getElementById('term-stats').innerHTML = '<p><strong>36 months:</strong> ' + formatPercent(term36.default_rate, 1) + '</p><p><strong>60 months:</strong> ' + formatPercent(term60.default_rate, 1) + '</p>';
+
+  // Cohort stats
+  const cohorts = await loadCSV('../stages/04-exposure/output/at_risk_cohorts.csv');
+  if (cohorts && cohorts.length > 0) {
+    const topCohort = cohorts.sort((a, b) => b.at_risk_exposure - a.at_risk_exposure)[0];
+    document.getElementById('cohort-stats').innerHTML = '<p><strong>Highest risk:</strong> Grade ' + topCohort.grade + ', ' + topCohort.term + '</p><p><strong>At risk exposure:</strong> ' + formatCurrency(topCohort.at_risk_exposure) + '</p>';
+  }
+
+  // Pie chart: Loans by grade
+  const gradeLabels = ['A', 'B', 'C', 'D', 'E', 'F', 'G'];
+  const gradeValues = grades.map(g => g.loan_count);
+  const gradeColors = ['#f1c40f', '#f39c12', '#e67e22', '#e74c3c', '#e63946', '#d02d26', '#8e44ad'];
+
+  // Bar chart: Portfolio value by grade
+  const valueCtx = document.getElementById('grade-value-chart').getContext('2d');
+  new Chart(valueCtx, {
+    type: 'bar',
+    data: {
+      labels: gradeLabels,
+      datasets: [{
+        label: 'Portfolio Value ($B)',
+        data: grades.map(g => parseFloat(g.total_portfolio_value) / 1e9),
+        backgroundColor: gradeColors,
+        borderColor: 'transparent',
+        barPercentage: 0.55,
+        categoryPercentage: 0.7
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      scales: {
+        y: {
+          beginAtZero: true,
+          ticks: { callback: v => '$' + v.toFixed(1) + 'B' }
+        }
+      },
+      plugins: {
+        legend: { display: false },
+        tooltip: { callbacks: { label: ctx => '$' + ctx.parsed.y.toFixed(2) + 'B' } }
+      }
+    }
+  });
+
+  // Bar chart: Default rate by grade
+  const barCtx = document.getElementById('default-rate-chart').getContext('2d');
+  new Chart(barCtx, {
+    type: 'bar',
+    data: {
+      labels: gradeLabels,
+      datasets: [{
+        label: 'Default Rate',
+        data: grades.map(g => g.default_rate * 100),
+        backgroundColor: gradeColors,
+        borderColor: 'transparent'
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      scales: {
+        y: {
+          beginAtZero: true,
+          max: 50
+        }
+      },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: function(context) {
+              return context.parsed.y.toFixed(1) + '%';
+            }
+          }
+        }
+      },
+      datasets: {
+        bar: { barPercentage: 0.55, categoryPercentage: 0.7 }
+      }
+    }
+  });
+
+  // Top grades table by expected loss
+  const topGrades = exposure
+    .filter(r => r.segment_type === 'grade')
+    .sort((a, b) => b.segment_expected_loss - a.segment_expected_loss)
+    .slice(0, 7);
+
+  const topTable = document.getElementById('top-grades-table');
+  topGrades.forEach(row => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = '<td><strong>Grade ' + row.segment_value + '</strong></td><td>' + formatCurrency(row.segment_expected_loss) + '</td><td>' + formatPercent(row.pct_of_portfolio_exposure, 1) + '</td>';
+    topTable.appendChild(tr);
+  });
+
+  // Highest default rates table
+  const sortedGrades = grades.slice().sort((a, b) => b.default_rate - a.default_rate);
+  const defaultTable = document.getElementById('highest-default-table');
+  sortedGrades.forEach((g) => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = '<td><strong>Grade ' + g.segment_value + '</strong></td><td>' + formatPercent(g.default_rate, 1) + '</td><td>' + formatNumber(g.loan_count) + '</td>';
+    defaultTable.appendChild(tr);
+  });
+
+  initPage('home');
+}
+
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', loadHomeData);
+
+</script>
+
 </body>
 </html>

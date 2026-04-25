@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Risk by Term – LendingClub 2007–2018</title>
+  <link rel="stylesheet" href="css/main.css">
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav class="navbar">
+  <div class="navbar-container">
+    <div class="navbar-title-wrap">
+      <a href="index.html" class="navbar-brand">
+        <span class="brand-name">LendingClub</span>
+        <small>2007 to 2018</small>
+      </a>
+      <span class="navbar-byline">A dashboard by Gage Gaubert</span>
+    </div>
+    <ul class="navbar-menu">
+      <li><a href="index.html" data-page="home">Home</a></li>
+      <li><a href="grade.html" data-page="grade">Risk by Grade</a></li>
+      <li><a href="term.html" data-page="term" class="active">Risk by Term</a></li>
+      <li><a href="purpose.html" data-page="purpose">Risk by Purpose</a></li>
+      <li><a href="borrower.html" data-page="borrower">Borrower Profile</a></li>
+      <li><a href="cohorts.html" data-page="cohorts">At Risk Cohorts</a></li>
+      <li><a href="model.html" data-page="model">Rate Predictor</a></li>
+      <li><a href="assumptions.html" data-page="assumptions">Methodology</a></li>
+    </ul>
+    <span class="navbar-timestamp">Updated: --:--</span>
+  </div>
+</nav>
+
+<!-- MAIN CONTENT -->
+<main>
+
+  <!-- PAGE TITLE -->
+  <section>
+    <h1>Risk Analysis by Loan Term</h1>
+    <p>60 month loans carry significantly higher default risk than 36 month loans. Despite representing only 21% of portfolio count, 60 month terms drive 56% of expected losses. The 32.1% vs 15.5% default rate gap reflects extended exposure duration, borrower delinquency patterns over time, and higher average loan amounts amplifying loss severity.</p>
+  </section>
+
+  <!-- COMPARISON CARDS -->
+  <section>
+    <h2>36 Month vs 60 Month Comparison</h2>
+    <div class="grid-2">
+
+      <div class="card">
+        <h3>36 Month Loans</h3>
+        <div style="margin: var(--gap-md) 0;">
+          <div style="display: flex; justify-content: space-between; margin-bottom: var(--gap-md);">
+            <div>
+              <p style="margin: 0; font-size: 0.85rem; color: var(--text-secondary);">Default Rate</p>
+              <p style="margin: 0; font-size: 2rem; font-weight: 700; color: #f39c12;" id="term-36-rate">--</p>
+            </div>
+            <div>
+              <p style="margin: 0; font-size: 0.85rem; color: var(--text-secondary);">Loan Count</p>
+              <p style="margin: 0; font-size: 1.8rem; font-weight: 700;" id="term-36-count">--</p>
+            </div>
+          </div>
+          <hr style="border: none; border-top: 1px solid var(--border-light); margin: var(--gap-md) 0;">
+          <p id="term-36-stats" style="font-size: 0.9rem; line-height: 1.7;"></p>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>60 Month Loans</h3>
+        <div style="margin: var(--gap-md) 0;">
+          <div style="display: flex; justify-content: space-between; margin-bottom: var(--gap-md);">
+            <div>
+              <p style="margin: 0; font-size: 0.85rem; color: var(--text-secondary);">Default Rate</p>
+              <p style="margin: 0; font-size: 2rem; font-weight: 700; color: #e74c3c;" id="term-60-rate">--</p>
+            </div>
+            <div>
+              <p style="margin: 0; font-size: 0.85rem; color: var(--text-secondary);">Loan Count</p>
+              <p style="margin: 0; font-size: 1.8rem; font-weight: 700;" id="term-60-count">--</p>
+            </div>
+          </div>
+          <hr style="border: none; border-top: 1px solid var(--border-light); margin: var(--gap-md) 0;">
+          <p id="term-60-stats" style="font-size: 0.9rem; line-height: 1.7;"></p>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- CHARTS ROW -->
+  <section>
+    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: var(--gap-md);">
+      <div class="card">
+        <h3>Default Rate</h3>
+        <div class="chart-container" style="height: 200px;">
+          <canvas id="term-comparison-chart"></canvas>
+        </div>
+      </div>
+      <div class="card">
+        <h3>Loan Count</h3>
+        <div class="chart-container" style="height: 200px;">
+          <canvas id="term-count-bar"></canvas>
+        </div>
+      </div>
+      <div class="card">
+        <h3>Expected Loss</h3>
+        <div class="chart-container" style="height: 200px;">
+          <canvas id="term-loss-chart"></canvas>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<!-- FOOTER -->
+<footer>
+  <p>Term length is one of the strongest risk drivers. The 2x default rate difference reflects both borrower behavior patterns and economic sensitivity over time.</p>
+</footer>
+
+<!-- SCRIPTS -->
+<script src="js/main.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+<script>
+
+async function loadTermData() {
+
+  const termData = await loadJSON('../stages/03-segment/output/term_breakdown.json');
+  if (!termData) return;
+
+  const exposure = await loadCSV('../stages/04-exposure/output/exposure_summary.csv');
+
+  const term36 = termData[0];
+  const term60 = termData[1];
+
+  // Update cards
+  document.getElementById('term-36-rate').textContent = formatPercent(term36.default_rate, 1);
+  document.getElementById('term-36-count').textContent = formatNumber(term36.loan_count);
+  document.getElementById('term-36-stats').innerHTML = `
+    <p><span style="color: var(--text-secondary);">Defaults:</span> ${formatNumber(term36.default_count)}</p>
+    <p><span style="color: var(--text-secondary);">Avg Amount:</span> ${formatCurrency(term36.avg_loan_amount)}</p>
+    <p><span style="color: var(--text-secondary);">Avg Rate:</span> ${formatPercent(term36.avg_int_rate, 1)}</p>
+    <p><span style="color: var(--text-secondary);">Portfolio Value:</span> ${formatCurrency(term36.total_portfolio_value)}</p>
+  `;
+
+  document.getElementById('term-60-rate').textContent = formatPercent(term60.default_rate, 1);
+  document.getElementById('term-60-count').textContent = formatNumber(term60.loan_count);
+  document.getElementById('term-60-stats').innerHTML = `
+    <p><span style="color: var(--text-secondary);">Defaults:</span> ${formatNumber(term60.default_count)}</p>
+    <p><span style="color: var(--text-secondary);">Avg Amount:</span> ${formatCurrency(term60.avg_loan_amount)}</p>
+    <p><span style="color: var(--text-secondary);">Avg Rate:</span> ${formatPercent(term60.avg_int_rate, 1)}</p>
+    <p><span style="color: var(--text-secondary);">Portfolio Value:</span> ${formatCurrency(term60.total_portfolio_value)}</p>
+  `;
+
+  // Comparison bar chart
+  const termColors = ['#f39c12', '#d02d26'];
+  const compCtx = document.getElementById('term-comparison-chart').getContext('2d');
+  new Chart(compCtx, {
+    type: 'bar',
+    data: {
+      labels: ['36 months', '60 months'],
+      datasets: [{
+        label: 'Default Rate',
+        data: [term36.default_rate * 100, term60.default_rate * 100],
+        backgroundColor: termColors,
+        borderColor: 'transparent',
+        barPercentage: 0.5,
+        categoryPercentage: 0.6
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      scales: {
+        y: {
+          beginAtZero: true,
+          max: 40,
+          ticks: { callback: function(v) { return v + '%'; } }
+        }
+      },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: function(ctx) { return ctx.parsed.y.toFixed(1) + '%'; }
+          }
+        }
+      }
+    }
+  });
+
+  // Count bar (replaced pie)
+  const countCtx = document.getElementById('term-count-bar').getContext('2d');
+  new Chart(countCtx, {
+    type: 'bar',
+    data: {
+      labels: ['36 months', '60 months'],
+      datasets: [{
+        label: 'Loan Count',
+        data: [term36.loan_count, term60.loan_count],
+        backgroundColor: termColors,
+        borderColor: 'transparent',
+        barPercentage: 0.5,
+        categoryPercentage: 0.6
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      scales: { y: { beginAtZero: true, ticks: { callback: v => (v/1000).toFixed(0)+'K' } } },
+      plugins: { legend: { display: false } }
+    }
+  });
+
+  // Loss chart
+  const termExposure = exposure.filter(r => r.segment_type === 'term');
+  const loss36 = termExposure.find(r => r.segment_value === '36 months');
+  const loss60 = termExposure.find(r => r.segment_value === '60 months');
+
+  const lossCtx = document.getElementById('term-loss-chart').getContext('2d');
+  new Chart(lossCtx, {
+    type: 'bar',
+    data: {
+      labels: ['36 months', '60 months'],
+      datasets: [{
+        label: 'Expected Loss',
+        data: [loss36.segment_expected_loss / 1e9, loss60.segment_expected_loss / 1e9],
+        backgroundColor: ['#f39c12', '#d02d26'],
+        borderColor: 'transparent',
+        barPercentage: 0.5,
+        categoryPercentage: 0.6
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      scales: {
+        y: {
+          beginAtZero: true,
+          ticks: { callback: function(v) { return '$' + v.toFixed(2) + 'B'; } }
+        }
+      },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: function(ctx) { return formatCurrency(ctx.parsed.y * 1e9); }
+          }
+        }
+      }
+    }
+  });
+
+  initPage('term');
+}
+
+document.addEventListener('DOMContentLoaded', loadTermData);
+
+</script>
+
+</body>
+</html>
