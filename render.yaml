@@ -1,9 +1,9 @@
 services:
-  - type: static
+  - type: web
     name: lending-risk-intelligence
-    env: static
-    buildCommand: npm install && npm run build
-    staticPublishPath: ./
-    routes:
-      - path: /*
-        destination: /index.html
+    runtime: python
+    buildCommand: "echo 'Static site - no build required'"
+    startCommand: "python3 -m http.server 8000"
+    envVars:
+      - key: PYTHONUNBUFFERED
+        value: true
