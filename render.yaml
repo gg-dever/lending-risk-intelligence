@@ -1,0 +1,9 @@
+services:
+  - type: static
+    name: lending-risk-intelligence
+    env: static
+    buildCommand: npm install && npm run build
+    staticPublishPath: ./
+    routes:
+      - path: /*
+        destination: /index.html
