@@ -1,0 +1,20 @@
+[
+  {
+    "segment_value": "36 months",
+    "loan_count": 956976,
+    "default_count": 147955,
+    "default_rate": 0.1546068030964204,
+    "avg_loan_amount": 12701.45894463393,
+    "total_portfolio_value": 12154991375.0,
+    "avg_int_rate": 0.12084824447008075
+  },
+  {
+    "segment_value": "60 months",
+    "loan_count": 312573,
+    "default_count": 100255,
+    "default_rate": 0.3207410748849069,
+    "avg_loan_amount": 20369.66828548851,
+    "total_portfolio_value": 6367008325.0,
+    "avg_int_rate": 0.16759464221157935
+  }
+]

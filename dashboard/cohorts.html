@@ -90,7 +90,7 @@
 
 async function loadCohortsData() {
 
-  const cohorts = await loadCSV('../stages/04-exposure/output/at_risk_cohorts.csv');
+  const cohorts = await loadCSV('data/at_risk_cohorts.csv');
   if (!cohorts) return;
 
   // Parse numeric fields
@@ -124,7 +124,7 @@ async function loadCohortsData() {
   });
 
   // Crisis table — load from crisis_crosstab.csv
-  const crisisRaw = await loadCSV('../stages/03-segment/output/crisis_crosstab.csv');
+  const crisisRaw = await loadCSV('data/crisis_crosstab.csv');
   if (crisisRaw) {
     const crisisTable = document.getElementById('crisis-table');
     const crisisRows = [

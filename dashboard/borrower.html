@@ -71,8 +71,8 @@
 async function loadBorrowerData() {
 
   // Load breakdowns
-  const dtiData = await loadJSON('../stages/03-segment/output/dti_bucket_breakdown.json');
-  const homeData = await loadJSON('../stages/03-segment/output/home_ownership_breakdown.json');
+  const dtiData = await loadJSON('data/dti_bucket_breakdown.json');
+  const homeData = await loadJSON('data/home_ownership_breakdown.json');
 
   if (!dtiData || !homeData) return;
 

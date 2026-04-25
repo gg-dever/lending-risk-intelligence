@@ -123,10 +123,10 @@
 
 async function loadTermData() {
 
-  const termData = await loadJSON('../stages/03-segment/output/term_breakdown.json');
+  const termData = await loadJSON('data/term_breakdown.json');
   if (!termData) return;
 
-  const exposure = await loadCSV('../stages/04-exposure/output/exposure_summary.csv');
+  const exposure = await loadCSV('data/exposure_summary.csv');
 
   const term36 = termData[0];
   const term60 = termData[1];

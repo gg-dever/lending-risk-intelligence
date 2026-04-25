@@ -84,7 +84,7 @@
 <script>
 
 async function loadPurposeData() {
-  const purposes = await loadJSON('../stages/03-segment/output/purpose_breakdown.json');
+  const purposes = await loadJSON('data/purpose_breakdown.json');
   if (!purposes) return;
 
   function formatPurpose(raw) {

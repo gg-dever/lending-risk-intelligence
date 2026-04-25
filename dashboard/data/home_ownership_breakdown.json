@@ -1,0 +1,56 @@
+[
+  {
+    "segment_value": "RENT",
+    "loan_count": 509124,
+    "default_count": 115753,
+    "default_rate": 0.22735718606861982,
+    "avg_loan_amount": 12791.31964904424,
+    "total_portfolio_value": 6512367825.0,
+    "avg_int_rate": 0.13614407256385475
+  },
+  {
+    "segment_value": "OTHER",
+    "loan_count": 179,
+    "default_count": 38,
+    "default_rate": 0.2122905027932961,
+    "avg_loan_amount": 10804.189944134077,
+    "total_portfolio_value": 1933950.0,
+    "avg_int_rate": 0.13448938547486033
+  },
+  {
+    "segment_value": "OWN",
+    "loan_count": 129383,
+    "default_count": 25760,
+    "default_rate": 0.19909879968774877,
+    "avg_loan_amount": 14204.249205846208,
+    "total_portfolio_value": 1837788375.0,
+    "avg_int_rate": 0.13307859069584102
+  },
+  {
+    "segment_value": "ANY",
+    "loan_count": 267,
+    "default_count": 52,
+    "default_rate": 0.1947565543071161,
+    "avg_loan_amount": 14131.2734082397,
+    "total_portfolio_value": 3773050.0,
+    "avg_int_rate": 0.13902771535580524
+  },
+  {
+    "segment_value": "MORTGAGE",
+    "loan_count": 630545,
+    "default_count": 106600,
+    "default_rate": 0.1690600988034161,
+    "avg_loan_amount": 16121.676843048474,
+    "total_portfolio_value": 10165442725.0,
+    "avg_int_rate": 0.1291480184602209
+  },
+  {
+    "segment_value": "NONE",
+    "loan_count": 51,
+    "default_count": 7,
+    "default_rate": 0.13725490196078433,
+    "avg_loan_amount": 13603.43137254902,
+    "total_portfolio_value": 693775.0,
+    "avg_int_rate": 0.14267254901960782
+  }
+]

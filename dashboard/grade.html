@@ -123,10 +123,10 @@
 
 async function loadGradeData() {
 
-  const grades = await loadJSON('../stages/03-segment/output/grade_breakdown.json');
+  const grades = await loadJSON('data/grade_breakdown.json');
   if (!grades) return;
 
-  const exposure = await loadCSV('../stages/04-exposure/output/exposure_summary.csv');
+  const exposure = await loadCSV('data/exposure_summary.csv');
   const gradeLabels = ['A', 'B', 'C', 'D', 'E', 'F', 'G'];
   const gradeColors = ['#f1c40f', '#f39c12', '#e67e22', '#e74c3c', '#e63946', '#d02d26', '#8e44ad'];
 

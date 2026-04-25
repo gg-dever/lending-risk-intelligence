@@ -1,0 +1,128 @@
+[
+  {
+    "segment_value": "small_business",
+    "loan_count": 15137,
+    "default_count": 4510,
+    "default_rate": 0.2979454317235912,
+    "avg_loan_amount": 15738.950914976547,
+    "total_portfolio_value": 238240500.0,
+    "avg_int_rate": 0.15924115082248794
+  },
+  {
+    "segment_value": "renewable_energy",
+    "loan_count": 879,
+    "default_count": 211,
+    "default_rate": 0.24004550625711035,
+    "avg_loan_amount": 10157.16723549488,
+    "total_portfolio_value": 8928150.0,
+    "avg_int_rate": 0.15218350398179747
+  },
+  {
+    "segment_value": "moving",
+    "loan_count": 8928,
+    "default_count": 2034,
+    "default_rate": 0.22782258064516128,
+    "avg_loan_amount": 7926.6437051971325,
+    "total_portfolio_value": 70769075.0,
+    "avg_int_rate": 0.15104199148745517
+  },
+  {
+    "segment_value": "house",
+    "loan_count": 6867,
+    "default_count": 1490,
+    "default_rate": 0.21697975826416194,
+    "avg_loan_amount": 15528.724333770206,
+    "total_portfolio_value": 106635750.0,
+    "avg_int_rate": 0.15446341925149265
+  },
+  {
+    "segment_value": "medical",
+    "loan_count": 14311,
+    "default_count": 2989,
+    "default_rate": 0.20886031723848789,
+    "avg_loan_amount": 9140.905597093146,
+    "total_portfolio_value": 130815500.0,
+    "avg_int_rate": 0.14015916427922576
+  },
+  {
+    "segment_value": "debt_consolidation",
+    "loan_count": 738677,
+    "default_count": 153201,
+    "default_rate": 0.20739917447003223,
+    "avg_loan_amount": 15393.216960863814,
+    "total_portfolio_value": 11370615325.0,
+    "avg_int_rate": 0.1361543217130085
+  },
+  {
+    "segment_value": "other",
+    "loan_count": 72670,
+    "default_count": 15011,
+    "default_rate": 0.20656391908628044,
+    "avg_loan_amount": 9971.922044860328,
+    "total_portfolio_value": 724659575.0,
+    "avg_int_rate": 0.14584395073620474
+  },
+  {
+    "segment_value": "educational",
+    "loan_count": 414,
+    "default_count": 84,
+    "default_rate": 0.2028985507246377,
+    "avg_loan_amount": 6647.342995169082,
+    "total_portfolio_value": 2752000.0,
+    "avg_int_rate": 0.12151183574879226
+  },
+  {
+    "segment_value": "vacation",
+    "loan_count": 8388,
+    "default_count": 1571,
+    "default_rate": 0.18729136862184073,
+    "avg_loan_amount": 6238.140796375775,
+    "total_portfolio_value": 52325525.0,
+    "avg_int_rate": 0.13701568907963757
+  },
+  {
+    "segment_value": "major_purchase",
+    "loan_count": 27896,
+    "default_count": 5104,
+    "default_rate": 0.1829652996845426,
+    "avg_loan_amount": 11987.123601950101,
+    "total_portfolio_value": 334392800.0,
+    "avg_int_rate": 0.12749321766561514
+  },
+  {
+    "segment_value": "home_improvement",
+    "loan_count": 81467,
+    "default_count": 14096,
+    "default_rate": 0.1730271152736691,
+    "avg_loan_amount": 14374.081836817362,
+    "total_portfolio_value": 1171013325.0,
+    "avg_int_rate": 0.12783287343341473
+  },
+  {
+    "segment_value": "credit_card",
+    "loan_count": 277751,
+    "default_count": 45655,
+    "default_rate": 0.16437384563871957,
+    "avg_loan_amount": 14988.709221568959,
+    "total_portfolio_value": 4163128975.0,
+    "avg_int_rate": 0.11784933555594759
+  },
+  {
+    "segment_value": "car",
+    "loan_count": 13846,
+    "default_count": 1971,
+    "default_rate": 0.14235158168424095,
+    "avg_loan_amount": 8914.605301170013,
+    "total_portfolio_value": 123431625.0,
+    "avg_int_rate": 0.12071576628629206
+  },
+  {
+    "segment_value": "wedding",
+    "loan_count": 2318,
+    "default_count": 283,
+    "default_rate": 0.12208800690250216,
+    "avg_loan_amount": 10479.540552200173,
+    "total_portfolio_value": 24291575.0,
+    "avg_int_rate": 0.14156773080241586
+  }
+]

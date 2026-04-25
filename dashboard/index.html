@@ -171,15 +171,15 @@
 async function loadHomeData() {
 
   // Load portfolio headline
-  const headline = await loadJSON('../stages/04-exposure/output/portfolio_headline.json');
+  const headline = await loadJSON('data/portfolio_headline.json');
   if (!headline) return;
 
   // Load grade breakdown for charts
-  const grades = await loadJSON('../stages/03-segment/output/grade_breakdown.json');
+  const grades = await loadJSON('data/grade_breakdown.json');
   if (!grades) return;
 
   // Load exposure summary for top grades
-  const exposure = await loadCSV('../stages/04-exposure/output/exposure_summary.csv');
+  const exposure = await loadCSV('data/exposure_summary.csv');
 
   // Update KPI cards
   document.getElementById('portfolio-value').textContent = formatCurrency(headline.portfolio_value_usd);
@@ -199,13 +199,13 @@ async function loadHomeData() {
   document.getElementById('grade-stats').innerHTML = '<p><strong>Grade A:</strong> ' + formatPercent(gradeStats.default_rate, 1) + ' default</p><p><strong>Grade G:</strong> ' + formatPercent(grades[6].default_rate, 1) + ' default</p>';
 
   // Term stats
-  const termData = await loadJSON('../stages/03-segment/output/term_breakdown.json');
+  const termData = await loadJSON('data/term_breakdown.json');
   const term36 = termData[0];
   const term60 = termData[1];
   document.getElementById('term-stats').innerHTML = '<p><strong>36 months:</strong> ' + formatPercent(term36.default_rate, 1) + '</p><p><strong>60 months:</strong> ' + formatPercent(term60.default_rate, 1) + '</p>';
 
   // Cohort stats
-  const cohorts = await loadCSV('../stages/04-exposure/output/at_risk_cohorts.csv');
+  const cohorts = await loadCSV('data/at_risk_cohorts.csv');
   if (cohorts && cohorts.length > 0) {
     const topCohort = cohorts.sort((a, b) => b.at_risk_exposure - a.at_risk_exposure)[0];
     document.getElementById('cohort-stats').innerHTML = '<p><strong>Highest risk:</strong> Grade ' + topCohort.grade + ', ' + topCohort.term + '</p><p><strong>At risk exposure:</strong> ' + formatCurrency(topCohort.at_risk_exposure) + '</p>';

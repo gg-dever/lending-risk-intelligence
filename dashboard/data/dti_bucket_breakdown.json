@@ -1,0 +1,56 @@
+[
+  {
+    "segment_value": "0-10",
+    "loan_count": 233071,
+    "default_count": 33970,
+    "default_rate": 0.145749578454634,
+    "avg_loan_amount": 13717.753924769706,
+    "total_portfolio_value": 3197210625.0,
+    "avg_int_rate": 0.12260765775235871
+  },
+  {
+    "segment_value": "10-20",
+    "loan_count": 535470,
+    "default_count": 93853,
+    "default_rate": 0.17527219078566492,
+    "avg_loan_amount": 14765.50819840514,
+    "total_portfolio_value": 7906486675.0,
+    "avg_int_rate": 0.12823359161110798
+  },
+  {
+    "segment_value": "20-30",
+    "loan_count": 383636,
+    "default_count": 86852,
+    "default_rate": 0.2263916837835865,
+    "avg_loan_amount": 14897.765199303507,
+    "total_portfolio_value": 5715319050.0,
+    "avg_int_rate": 0.13756732814438685
+  },
+  {
+    "segment_value": "30-40",
+    "loan_count": 111177,
+    "default_count": 31777,
+    "default_rate": 0.2858235066605503,
+    "avg_loan_amount": 14362.398472705685,
+    "total_portfolio_value": 1596768375.0,
+    "avg_int_rate": 0.15291593764897415
+  },
+  {
+    "segment_value": "40-50",
+    "loan_count": 3457,
+    "default_count": 1079,
+    "default_rate": 0.31212033555105584,
+    "avg_loan_amount": 16607.774081573618,
+    "total_portfolio_value": 57413075.0,
+    "avg_int_rate": 0.17397460225629155
+  },
+  {
+    "segment_value": "50+",
+    "loan_count": 1953,
+    "default_count": 531,
+    "default_rate": 0.271889400921659,
+    "avg_loan_amount": 20356.246799795186,
+    "total_portfolio_value": 39755750.0,
+    "avg_int_rate": 0.1595926267281106
+  }
+]

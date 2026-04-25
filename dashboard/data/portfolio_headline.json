@@ -1,0 +1,18 @@
+{
+  "portfolio_value_usd": 18521999700.0,
+  "portfolio_default_rate_pct": 0.1955103741564918,
+  "expected_loss_usd": 1086372927.442029,
+  "loss_rate_pct": 0.05865311224694756,
+  "metadata": {
+    "generated": "2026-04-23T16:17:41.698783",
+    "sources": [
+      "stages/02-clean/output/lending_risk_cleaned.csv",
+      "stages/03-segment/output/segment_summary.csv"
+    ],
+    "assumptions": {
+      "recovery_rate": 0.7,
+      "loss_given_default": 0.30000000000000004,
+      "source": "Industry historical average for unsecured consumer credit (2000-2020)"
+    }
+  }
+}
