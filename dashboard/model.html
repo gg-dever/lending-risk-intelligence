@@ -36,7 +36,7 @@
   <section>
     <h1>Rate Predictor</h1>
     <p>LendingClub's interest rate pricing is largely systematic and driven by a handful of identifiable factors. This analysis breaks down which borrower attributes most influence the rate a borrower receives, and what that means for investors.</p>
-    <p style="font-size: 0.86rem; color: var(--text-secondary); margin-top: var(--gap-sm);">Model context: Test R² is approximately 0.52, so this tool is directional and should be read as a pricing range estimate rather than a precise quote engine.</p>
+    <p style="font-size: 0.86rem; color: var(--text-secondary); margin-top: var(--gap-sm);">Model context: Test R² is approximately 0.52. Notably, grade, subgrade, and installment amount were intentionally excluded. These are internal LendingClub assignments not available to external parties at origination. The model uses only borrower-observable inputs, so the R² reflects realistic external predictive power, not a ceiling.</p>
   </section>
 
   <!-- INVESTOR TAKEAWAYS -->
@@ -48,12 +48,14 @@
           <li>In this sample, rate is a useful proxy for credit risk. Borrowers assigned higher rates tend to default at higher rates</li>
           <li>Loan term is one of the strongest drivers of rate. 60 month loans tend to carry higher rates</li>
           <li>FICO score is among the largest drivers, consistent with creditworthiness being priced into rates</li>
+          <li>Grade and subgrade, LendingClub's proprietary risk assignments, were excluded by design. This model predicts rates using only information a borrower or external analyst would have at application time, making it a realistic approximation of rate transparency from the outside</li>
           <li>About half of rate variance is explained by publicly available origination data, while the remainder may reflect unobserved underwriting factors including proprietary subgrade assignments</li>
         </ul>
       </div>
       <div class="card">
         <h3>Reading the chart</h3>
         <p style="line-height: 1.9; margin-bottom: var(--gap-md);">The bars below show how much each feature contributes to rate determination. Higher importance means the model's accuracy drops more when that feature is removed, indicating stronger influence on pricing.</p>
+        <p style="line-height: 1.9; margin-bottom: var(--gap-md);">Features like grade and subgrade, which would otherwise dominate rate determination, are intentionally absent. What remains reflects the publicly observable signal in rate pricing.</p>
         <p style="line-height: 1.9;">A relatively stable rate structure can support portfolio analysis by suggesting that yield differences are related to measurable risk drivers rather than purely random variation.</p>
       </div>
     </div>
