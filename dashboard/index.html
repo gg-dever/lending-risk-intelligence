@@ -61,11 +61,6 @@
       <div class="kpi-subtext" id="loss-rate">-- of portfolio</div>
     </div>
 
-    <div class="kpi-card">
-      <div class="kpi-label">Risk Status</div>
-      <div id="risk-status-badge" style="margin-top: var(--gap-sm);"></div>
-      <div class="kpi-subtext">Moderate to Elevated</div>
-    </div>
   </section>
 
   <!-- PORTFOLIO NARRATIVE -->
@@ -192,8 +187,10 @@ async function loadHomeData() {
   const lossRate = headline ? headline.loss_rate_pct : 0.06;
   const riskLevel = lossRate > 0.08 ? 'high' : lossRate > 0.06 ? 'elevated' : 'moderate';
   const badge = document.getElementById('risk-status-badge');
-  const badgeText = riskLevel.charAt(0).toUpperCase() + riskLevel.slice(1);
-  badge.innerHTML = '<span class="risk-badge ' + riskLevel + '">' + badgeText + '</span>';
+  if (badge) {
+    const badgeText = riskLevel.charAt(0).toUpperCase() + riskLevel.slice(1);
+    badge.innerHTML = '<span class="risk-badge ' + riskLevel + '">' + badgeText + '</span>';
+  }
 
   // Grade stats
   if (grades && grades.length >= 7) {
