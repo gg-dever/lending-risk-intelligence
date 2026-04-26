@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>At Risk Cohorts – LendingClub 2007–2018</title>
+  <title>At-Risk Exposure Segments – LendingClub 2007–2018</title>
   <link rel="stylesheet" href="css/main.css">
 </head>
 <body>
@@ -23,7 +23,7 @@
       <li><a href="term.html" data-page="term">Risk by Term</a></li>
       <li><a href="purpose.html" data-page="purpose">Risk by Purpose</a></li>
       <li><a href="borrower.html" data-page="borrower">Borrower Profile</a></li>
-      <li><a href="cohorts.html" data-page="cohorts" class="active">At Risk Cohorts</a></li>
+      <li><a href="cohorts.html" data-page="cohorts" class="active">At-Risk Exposure Segments</a></li>
       <li><a href="model.html" data-page="model">Rate Predictor</a></li>
       <li><a href="assumptions.html" data-page="assumptions">Methodology</a></li>
     </ul>
@@ -34,18 +34,18 @@
 <main>
 
   <section>
-    <h1>High Risk Cohorts</h1>
+    <h1>At-Risk Exposure Segments</h1>
     <p>Identification of loan combinations with the highest loss concentration. Crisis era loans are flagged separately.</p>
   </section>
 
   <section>
-    <p>The top 15 cohorts by forward looking at risk exposure are ranked below. Grade C x 36 month is the largest contributor by volume; Grade D and E x 60 month carry the highest loss rates. Loss rate here is the forward looking proxy derived from segment default experience applied to performing balances.</p>
+    <p>The top 15 segments by forward-looking at-risk exposure are ranked below. Grade C x 36 month is the largest contributor by volume; Grade D and E x 60 month carry the highest loss rates. Loss rate here is the forward-looking proxy derived from segment default experience applied to performing balances.</p>
   </section>
 
   <section>
     <h2>Top At-Risk Cohorts</h2>
     <div class="card">
-      <p>Ranked by expected loss contribution. These cohorts warrant closer portfolio monitoring.</p>
+      <p>Ranked by expected loss contribution. These segments warrant closer portfolio monitoring.</p>
       <table>
         <thead>
           <tr>
@@ -82,16 +82,17 @@
 </main>
 
 <footer>
-  <p>High risk cohorts are characterized by combination of elevated credit risk and extended lending terms. Crisis cohorts require separate baseline estimation.</p>
+  <p>These at-risk exposure segments combine elevated credit risk with longer lending terms. Crisis cohorts require separate baseline estimation.</p>
 </footer>
 
 <script src="js/main.js"></script>
 <script>
 
 async function loadCohortsData() {
+  initPage('cohorts');
 
   const cohorts = await loadCSV('data/at_risk_cohorts.csv');
-  if (!cohorts) return;
+  if (!cohorts || cohorts.length === 0) return;
 
   // Parse numeric fields
   cohorts.forEach(c => {
@@ -125,7 +126,7 @@ async function loadCohortsData() {
 
   // Crisis table — load from crisis_crosstab.csv
   const crisisRaw = await loadCSV('data/crisis_crosstab.csv');
-  if (crisisRaw) {
+  if (crisisRaw && crisisRaw.length > 0) {
     const crisisTable = document.getElementById('crisis-table');
     const crisisRows = [
       { period: 'Crisis Era 2008 to 2010',
@@ -141,14 +142,17 @@ async function loadCohortsData() {
       const tr = document.createElement('tr');
       tr.innerHTML = `
         <td><strong>${row.period}</strong></td>
-        <td>${formatPercent(row.rate, 1)}</td>
+        <td>${Number.isFinite(row.rate) ? formatPercent(row.rate, 1) : 'N/A'}</td>
         <td>${formatNumber(row.count)}</td>
       `;
       crisisTable.appendChild(tr);
     });
+  } else {
+    const crisisTable = document.getElementById('crisis-table');
+    const tr = document.createElement('tr');
+    tr.innerHTML = '<td><strong>Data unavailable</strong></td><td>N/A</td><td>N/A</td>';
+    crisisTable.appendChild(tr);
   }
-
-  initPage('cohorts');
 }
 
 document.addEventListener('DOMContentLoaded', loadCohortsData);

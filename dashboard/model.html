@@ -23,7 +23,7 @@
       <li><a href="term.html" data-page="term">Risk by Term</a></li>
       <li><a href="purpose.html" data-page="purpose">Risk by Purpose</a></li>
       <li><a href="borrower.html" data-page="borrower">Borrower Profile</a></li>
-      <li><a href="cohorts.html" data-page="cohorts">At Risk Cohorts</a></li>
+      <li><a href="cohorts.html" data-page="cohorts">At-Risk Exposure Segments</a></li>
       <li><a href="model.html" data-page="model" class="active">Rate Predictor</a></li>
       <li><a href="assumptions.html" data-page="assumptions">Methodology</a></li>
     </ul>
@@ -34,8 +34,9 @@
 <main>
 
   <section>
-    <h1>Interest Rate Predictor</h1>
+    <h1>Rate Predictor</h1>
     <p>LendingClub's interest rate pricing is largely systematic and driven by a handful of identifiable factors. This analysis breaks down which borrower attributes most influence the rate a borrower receives, and what that means for investors.</p>
+    <p style="font-size: 0.86rem; color: var(--text-secondary); margin-top: var(--gap-sm);">Model context: Test R² is approximately 0.52, so this tool is directional and should be read as a pricing range estimate rather than a precise quote engine.</p>
   </section>
 
   <!-- INVESTOR TAKEAWAYS -->
@@ -181,6 +182,7 @@
           <div class="scenario-output-note">Central estimate <span id="manual-central-rate">12.0%</span></div>
         </div>
       </div>
+      <p style="margin-top: var(--gap-sm); font-size: 0.82rem; color: var(--text-secondary); line-height: 1.7;">Wider bands usually indicate borrower combinations where observed pricing was more dispersed in historical data, so the model reports a larger plausible range.</p>
 
       <div>
         <div class="range-meter-labels">

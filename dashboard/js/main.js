@@ -2,8 +2,35 @@
    MAIN UTILITIES
    ============================================================ */
 
-// Determine base path for data files
-const BASE_PATH = '../stages';
+// Build fallback data paths so files resolve in GitHub Pages and Render URLs
+function getDataPathCandidates(path) {
+  const candidates = [];
+  const seen = new Set();
+
+  function pushCandidate(candidate) {
+    if (!candidate || seen.has(candidate)) return;
+    seen.add(candidate);
+    candidates.push(candidate);
+  }
+
+  pushCandidate(path);
+
+  if (!/^\.?\//.test(path)) {
+    pushCandidate('./' + path);
+  }
+
+  if (path.startsWith('data/')) {
+    const pathname = window.location.pathname || '';
+    if (pathname.includes('/dashboard/')) {
+      const base = pathname.split('/dashboard/')[0] || '';
+      pushCandidate(base + '/dashboard/' + path);
+    } else {
+      pushCandidate('/dashboard/' + path);
+    }
+  }
+
+  return candidates;
+}
 
 // Generate timestamp
 function getLastUpdated() {
@@ -46,31 +73,47 @@ function formatBasisPoints(value) {
 
 // Fetch JSON data
 async function loadJSON(path) {
-  try {
-    const response = await fetch(path);
-    if (!response.ok) {
-      throw new Error(`HTTP ${response.status}: ${path}`);
+  const candidates = getDataPathCandidates(path);
+  let lastError = null;
+
+  for (const candidate of candidates) {
+    try {
+      const response = await fetch(candidate);
+      if (!response.ok) {
+        lastError = new Error(`HTTP ${response.status}: ${candidate}`);
+        continue;
+      }
+      return await response.json();
+    } catch (error) {
+      lastError = error;
     }
-    return await response.json();
-  } catch (error) {
-    console.error('Error loading JSON:', error);
-    return null;
   }
+
+  console.error('Error loading JSON:', path, lastError);
+  return null;
 }
 
 // Fetch CSV data and parse
 async function loadCSV(path) {
-  try {
-    const response = await fetch(path);
-    if (!response.ok) {
-      throw new Error(`HTTP ${response.status}: ${path}`);
+  const candidates = getDataPathCandidates(path);
+  let lastError = null;
+
+  for (const candidate of candidates) {
+    try {
+      const response = await fetch(candidate);
+      if (!response.ok) {
+        lastError = new Error(`HTTP ${response.status}: ${candidate}`);
+        continue;
+      }
+      const text = await response.text();
+      return parseCSV(text);
+    } catch (error) {
+      lastError = error;
     }
-    const text = await response.text();
-    return parseCSV(text);
-  } catch (error) {
-    console.error('Error loading CSV:', error);
-    return [];
   }
+
+  console.error('Error loading CSV:', path, lastError);
+  return [];
 }
 
 // Simple CSV parser
@@ -151,9 +194,20 @@ function applyDarkChartDefaults() {
 // Initialize page (called from each HTML page)
 function initPage(pageName) {
   setActiveNav(pageName);
-  document.querySelector('.navbar-timestamp').textContent = 'Updated: ' + getLastUpdated();
+  const timestampEl = document.querySelector('.navbar-timestamp');
+  if (timestampEl) {
+    timestampEl.textContent = 'Updated: ' + getLastUpdated();
+  }
   applyDarkChartDefaults();
 }
+
+// Initialize timestamp immediately so pages never remain at placeholder values.
+document.addEventListener('DOMContentLoaded', () => {
+  const timestampEl = document.querySelector('.navbar-timestamp');
+  if (timestampEl) {
+    timestampEl.textContent = 'Updated: ' + getLastUpdated();
+  }
+});
 
 // Console banner
 console.log('%cLending Risk Intelligence Dashboard', 'font-size: 16px; font-weight: bold; color: #34495e;');
